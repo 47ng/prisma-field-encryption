@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: deps
+    schedule:
+      interval: weekly
+      time: "09:00"
+      timezone: Europe/Paris
+    assignees:
+      - franky47
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: next
+    schedule:
+      interval: monthly
+    assignees:
+      - franky47

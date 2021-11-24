@@ -1,7 +1,7 @@
 {
-  "name": "typescript-library-starter",
-  "version": "0.0.1",
-  "description": "Template repository for TypeScript libraries",
+  "name": "prisma-field-encryption",
+  "version": "0.0.0-semantically-released",
+  "description": "Transparent field-level encryption at rest for Prisma",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
@@ -15,39 +15,80 @@
     "url": "https://github.com/47ng/typescript-library-starter"
   },
   "keywords": [
-    "boilerplate",
-    "template"
+    "prisma",
+    "encryption",
+    "aes-256-gcm"
   ],
   "publishConfig": {
     "access": "public"
   },
   "scripts": {
-    "test": "jest --verbose",
-    "test:watch": "jest --verbose --watch",
-    "dev": "nodemon -e ts,.env -w .env -w . -x 'run-s build:ts test'",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "build": "run-s build:*",
     "build:clean": "rm -rf ./dist",
     "build:ts": "tsc",
-    "build": "run-s build:clean build:ts",
-    "ci": "run-s test build"
+    "ci": "run-s build test"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.24",
-    "@types/node": "^16.4.3",
-    "husky": "^7.0.1",
-    "jest": "^25.5.4",
-    "nodemon": "^2.0.12",
+    "@commitlint/config-conventional": "^15.0.0",
+    "@types/jest": "^27.0.3",
+    "@types/node": "^16.11.10",
+    "commitlint": "^15.0.0",
+    "husky": "^7.0.4",
+    "jest": "^27.3.1",
+    "nodemon": "^2.0.15",
     "npm-run-all": "^4.1.5",
-    "ts-jest": "^25.5.1",
-    "ts-node": "^10.1.0",
-    "typescript": "^3.9.10"
+    "ts-jest": "^27.0.7",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.2"
   },
   "jest": {
     "preset": "ts-jest/presets/js-with-ts",
+    "verbose": true,
     "testEnvironment": "node"
   },
-  "husky": {
-    "hooks": {
-      "pre-push": "yarn ci"
+  "prettier": {
+    "arrowParens": "avoid",
+    "semi": false,
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "none",
+    "useTabs": false
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "type-enum": [
+        2,
+        "always",
+        [
+          "build",
+          "chore",
+          "ci",
+          "clean",
+          "doc",
+          "feat",
+          "fix",
+          "perf",
+          "ref",
+          "revert",
+          "style",
+          "test"
+        ]
+      ],
+      "subject-case": [
+        0,
+        "always",
+        "sentence-case"
+      ],
+      "body-leading-blank": [
+        2,
+        "always",
+        true
+      ]
     }
   }
 }
