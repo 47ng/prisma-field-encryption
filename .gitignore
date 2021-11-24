@@ -2,6 +2,4 @@ node_modules/
 dist/
 .env
 yarn-error.log
-
-# Docker containers with persistance
-.volumes/
+coverage/
