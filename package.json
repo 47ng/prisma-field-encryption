@@ -1,0 +1,53 @@
+{
+  "name": "typescript-library-starter",
+  "version": "0.0.1",
+  "description": "Template repository for TypeScript libraries",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "author": {
+    "name": "François Best",
+    "email": "contact@francoisbest.com",
+    "url": "https://francoisbest.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/47ng/typescript-library-starter"
+  },
+  "keywords": [
+    "boilerplate",
+    "template"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "test": "jest --verbose",
+    "test:watch": "jest --verbose --watch",
+    "dev": "nodemon -e ts,.env -w .env -w . -x 'run-s build:ts test'",
+    "build:clean": "rm -rf ./dist",
+    "build:ts": "tsc",
+    "build": "run-s build:clean build:ts",
+    "ci": "run-s test build"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.24",
+    "@types/node": "^16.4.3",
+    "husky": "^7.0.1",
+    "jest": "^25.5.4",
+    "nodemon": "^2.0.12",
+    "npm-run-all": "^4.1.5",
+    "ts-jest": "^25.5.1",
+    "ts-node": "^10.1.0",
+    "typescript": "^3.9.10"
+  },
+  "jest": {
+    "preset": "ts-jest/presets/js-with-ts",
+    "testEnvironment": "node"
+  },
+  "husky": {
+    "hooks": {
+      "pre-push": "yarn ci"
+    }
+  }
+}

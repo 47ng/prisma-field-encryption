@@ -1,0 +1,6 @@
+**/*.test.ts
+tsconfig.json
+nodemon.json
+.env
+.volumes/
+yarn-error.log

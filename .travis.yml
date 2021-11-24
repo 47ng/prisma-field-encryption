@@ -1,0 +1,25 @@
+language: node_js
+
+node_js:
+  - node
+
+cache: yarn
+
+script:
+  - yarn ci
+
+deploy:
+  provider: npm
+  email: accounts@francoisbest.com
+  on:
+    tags: true
+  skip_cleanup: true
+
+notifications:
+  slack:
+    on_success: always
+    on_failure: always
+    on_error: always
+    template:
+      - 'Build %{result}: %{repository_slug}'
+      - 'Build <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) on %{branch} by %{author} %{result} in %{duration}'
