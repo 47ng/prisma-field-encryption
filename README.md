@@ -11,6 +11,13 @@
 
 <p align="center">Transparent field-level encryption at rest for Prisma.</p>
 
+## Context
+
+It's is based on a quick prototype, and I don't have a lot of free time to work on this these days.
+Please be patient and kind.
+
+See this [Twitter thread](https://twitter.com/fortysevenfx/status/1463265166682898438) for more information.
+
 ## Installation
 
 ```shell
