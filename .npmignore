@@ -1,7 +1,8 @@
-**/*.test.ts
-tsconfig.json
-nodemon.json
 .env
-.volumes/
-yarn-error.log
+.github/
+.husky/
+**/*.test.ts
 coverage/
+src/
+tsconfig.json
+yarn-error.log
