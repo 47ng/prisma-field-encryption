@@ -1,34 +1,37 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "target": "es2018",
-    "module": "commonjs",
-    "lib": ["DOM"],
-    "declaration": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "paths": { "*": ["types/*"] },
-
-    // Strict Type-Checking Options
+    // Type checking
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
 
-    // Additional Checks
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
+    // Modules
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "baseUrl": "./src",
+    "rootDir": "./src",
 
+    // Language & Environment
+    "target": "es2018",
+    "lib": ["dom"],
+
+    // Emit
+    "outDir": "./dist",
+    "declaration": true,
+    "downlevelIteration": true,
+
+    // Interop
+    "allowJs": true,
+    "isolatedModules": true,
     "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
 
     // Experimental Options
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+
+    // Misc
+    "skipLibCheck": true
   },
-  "exclude": ["./src/**/*.test.ts", "./dist", "./node_modules"]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "./dist", "**/*.test.ts"]
 }
