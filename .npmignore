@@ -1,7 +1,7 @@
 .env
 .github/
 .husky/
-**/*.test.ts
+**/*.test.*
 coverage/
 src/
 tsconfig.json
