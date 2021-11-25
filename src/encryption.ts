@@ -10,7 +10,11 @@ import {
 } from '@47ng/cloak'
 import objectPath from 'object-path'
 import rfdc from 'rfdc'
-import type { Configuration, MiddlewareParams } from './types'
+import type {
+  Configuration,
+  FieldsConfiguration,
+  MiddlewareParams
+} from './types'
 import { getStringLeafPaths } from './visitor'
 
 const clone = rfdc({
@@ -27,12 +31,9 @@ export interface KeysConfiguration {
   keychain: CloakKeychain
 }
 
-export function configureEncryption<
-  Models extends string,
-  Actions extends string
->(
-  params: MiddlewareParams<Models, Actions>,
-  config: Configuration<Models>
+export function configureEncryption(
+  params: MiddlewareParams,
+  fields: FieldsConfiguration
 ): EncryptionConfiguration {
   if (!params.model) {
     // Model is not available for raw SQL & execute.
@@ -46,7 +47,7 @@ export function configureEncryption<
   const action = String(params.action)
   const model = String(params.model)
 
-  const isModelEnabled = Object.entries(config.fields).some(
+  const isModelEnabled = Object.entries(fields).some(
     ([key, value]) => key.split('.')[0] === model && value === true
   )
 
@@ -64,9 +65,7 @@ export function configureEncryption<
   }
 }
 
-export function configureKeys<Models extends string>(
-  config: Configuration<Models>
-): KeysConfiguration {
+export function configureKeys(config: Configuration): KeysConfiguration {
   const encryptionKey =
     config.encryptionKey || process.env.PRISMA_FIELD_ENCRYPTION_KEY
 
@@ -98,11 +97,11 @@ export function configureKeys<Models extends string>(
 const lowercaseFirstLetter = (input: string) =>
   input[0].toLowerCase() + input.slice(1)
 
-export function encryptOnWrite<Models extends string>(
+export function encryptOnWrite(
   data: any,
   keys: KeysConfiguration,
-  config: Configuration<Models>,
-  model?: Models
+  fields: FieldsConfiguration,
+  model?: string
 ) {
   // Deep-clone the input to avoid mutating it.
   // (eg: if reusing objects across queries)
@@ -110,7 +109,7 @@ export function encryptOnWrite<Models extends string>(
 
   // From the configuration, lowercase the first letter of the models
   // to match the `include` behaviour in Prisma queries.
-  const encryptedFieldPaths = Object.entries(config.fields)
+  const encryptedFieldPaths = Object.entries(fields)
     .filter(([, value]) => value === true)
     .flatMap(([key]) => {
       const [model, field] = key.split('.')

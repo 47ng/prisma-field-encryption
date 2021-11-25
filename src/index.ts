@@ -1,3 +1,4 @@
+import { configureFields } from './dmmf'
 import {
   configureEncryption,
   configureKeys,
@@ -6,19 +7,19 @@ import {
 } from './encryption'
 import type { Configuration, Middleware, MiddlewareParams } from './types'
 
-export function fieldEncryptionMiddleware<
-  Models extends string,
-  Actions extends string
->(config: Configuration<Models>): Middleware<Models, Actions> {
+export function fieldEncryptionMiddleware(
+  config: Configuration = {}
+): Middleware {
   // This will throw if the encryption key is missing
   // or if anything is invalid.
   const keys = configureKeys(config)
+  const fields = configureFields()
 
   return async (
-    params: MiddlewareParams<Models, Actions>,
-    next: (params: MiddlewareParams<Models, Actions>) => Promise<any>
+    params: MiddlewareParams,
+    next: (params: MiddlewareParams) => Promise<any>
   ) => {
-    const encryptionConfig = configureEncryption(params, config)
+    const encryptionConfig = configureEncryption(params, fields)
 
     const logger =
       process.env.PRISMA_FIELD_ENCRYPTION_LOG === 'false'
@@ -39,6 +40,7 @@ export function fieldEncryptionMiddleware<
         _: `${operation} - fieldEncryptionMiddleware - pre-encrypt`,
         config,
         context: {
+          fields,
           ...keys,
           ...encryptionConfig
         },
@@ -48,7 +50,12 @@ export function fieldEncryptionMiddleware<
     )
 
     if (encryptionConfig.encryptOnWrite) {
-      const data = encryptOnWrite(params.args.data, keys, config, params.model)
+      const data = encryptOnWrite(
+        params.args.data,
+        keys,
+        fields,
+        params.model && String(params.model)
+      )
       params.args.data = data
     }
 

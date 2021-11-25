@@ -1,16 +1,14 @@
 import { formatKey } from '@47ng/cloak/dist/key'
 import { configureEncryption, configureKeys } from './encryption'
-import type { Configuration } from './types'
+import type { FieldsConfiguration } from './types'
 
 const TEST_KEY = 'k1.aesgcm256.DbQoar8ZLuUsOHZNyrnjlskInHDYlzF3q6y1KGM7DUM='
 
 describe('encryption', () => {
   type Models = 'User' | 'Post' | 'Unencrypted'
-  const config: Configuration<Models> = {
-    fields: {
-      'User.name': true,
-      'Post.content': true
-    }
+  const fields: FieldsConfiguration = {
+    'User.name': true,
+    'Post.content': true
   }
 
   describe('configureEncryption', () => {
@@ -22,7 +20,7 @@ describe('encryption', () => {
         dataPath: [],
         runInTransaction: false
       }
-      return configureEncryption(params, config)
+      return configureEncryption(params, fields)
     }
 
     test('unsupported operation', () => {
@@ -78,13 +76,12 @@ describe('encryption', () => {
   })
   describe('configureKeys', () => {
     test('No encryption key specified', () => {
-      const run = () => configureKeys(config)
+      const run = () => configureKeys({})
       expect(run).toThrowError(/No encryption key provided/)
     })
 
     test('Providing encryptionKey directly', () => {
       const { encryptionKey } = configureKeys({
-        ...config,
         encryptionKey: TEST_KEY
       })
       expect(formatKey(encryptionKey.raw as Uint8Array)).toEqual(TEST_KEY)
@@ -92,14 +89,13 @@ describe('encryption', () => {
 
     test('Providing encryptionKey via the environment', () => {
       process.env.PRISMA_FIELD_ENCRYPTION_KEY = TEST_KEY
-      const { encryptionKey } = configureKeys(config)
+      const { encryptionKey } = configureKeys({})
       expect(formatKey(encryptionKey.raw as Uint8Array)).toEqual(TEST_KEY)
       process.env.PRISMA_FIELD_ENCRYPTION_KEY = undefined
     })
 
     test('Encryption key is in the keychain', () => {
       const { encryptionKey, keychain } = configureKeys({
-        ...config,
         encryptionKey: TEST_KEY
       })
       expect(keychain[encryptionKey.fingerprint].key).toEqual(encryptionKey)
@@ -107,7 +103,6 @@ describe('encryption', () => {
 
     test('Loading decryption keys directly', () => {
       const { keychain } = configureKeys({
-        ...config,
         encryptionKey: TEST_KEY,
         decryptionKeys: [
           'k1.aesgcm256.4BNYdJnjOQJP2adq9cGM9kb4dZxDujUs6aPS0VeRtAM=',
@@ -124,7 +119,6 @@ describe('encryption', () => {
       ].join(',')
 
       const { keychain } = configureKeys({
-        ...config,
         encryptionKey: TEST_KEY
       })
       expect(Object.values(keychain).length).toEqual(3)
