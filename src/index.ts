@@ -22,15 +22,15 @@ export function fieldEncryptionMiddleware(
     const encryptionConfig = configureEncryption(params, fields)
 
     const logger =
-      process.env.PRISMA_FIELD_ENCRYPTION_LOG === 'false'
-        ? {
+      process.env.PRISMA_FIELD_ENCRYPTION_LOG === 'true'
+        ? console
+        : {
             log: (_args: any) => {},
             info: (_args: any) => {},
             dir: (_args: any) => {},
             error: console.error, // Still log errors
             warn: console.warn // and warnings
           }
-        : console
 
     const operation = `${params.model}.${params.action}`
 
