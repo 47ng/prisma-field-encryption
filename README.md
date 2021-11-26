@@ -3,7 +3,7 @@
 <div align="center">
 
 [![NPM](https://img.shields.io/npm/v/prisma-field-encryption?color=red)](https://www.npmjs.com/package/prisma-field-encryption)
-[![MIT License](https://img.shields.io/github/license/47ng/prisma-field-encryption.svg?color=blue)](https://github.com/47ng/prisma-field-encryption/blob/master/LICENSE)
+[![MIT License](https://img.shields.io/github/license/47ng/prisma-field-encryption.svg?color=blue)](https://github.com/47ng/prisma-field-encryption/blob/main/LICENSE)
 [![Continuous Integration](https://github.com/47ng/prisma-field-encryption/workflows/Continuous%20Integration/badge.svg?branch=next)](https://github.com/47ng/prisma-field-encryption/actions)
 [![Coverage Status](https://coveralls.io/repos/github/47ng/prisma-field-encryption/badge.svg?branch=next)](https://coveralls.io/github/47ng/prisma-field-encryption?branch=next)
 

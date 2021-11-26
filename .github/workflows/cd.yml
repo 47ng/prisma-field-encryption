@@ -3,7 +3,7 @@ name: Continuous Delivery
 on:
   push:
     branches:
-      - master
+      - main
       - beta
 
 jobs:
