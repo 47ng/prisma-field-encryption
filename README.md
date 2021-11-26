@@ -215,7 +215,7 @@ Cipher used: AES-GCM with 256 bit keys.
 
 ## Obligatory Disclaimer About Passwords
 
-**DO NOT USE THIS TO ENCRYPT PASSWORDS.**
+🚨 **DO NOT USE THIS TO ENCRYPT PASSWORDS** 🚨
 
 Passwords should be hashed & salted using a slow, constant-time one-way function.
 
