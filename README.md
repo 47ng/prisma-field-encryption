@@ -13,6 +13,8 @@
 
 ## Context
 
+[Demo repository](https://github.com/franky47/prisma-field-encryption-sandbox).
+
 See this [Twitter thread](https://twitter.com/fortysevenfx/status/1463265166682898438) for more information.
 
 ## Installation
