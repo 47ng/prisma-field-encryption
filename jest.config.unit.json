@@ -1,0 +1,8 @@
+{
+  "verbose": true,
+  "collectCoverage": true,
+  "coverageReporters": [["json", { "file": "coverage.unit.json" }]],
+  "preset": "ts-jest/presets/js-with-ts",
+  "testEnvironment": "node",
+  "testMatch": ["<rootDir>/src/*.test.[jt]s?(x)"]
+}

@@ -24,17 +24,23 @@
     "access": "public"
   },
   "scripts": {
-    "test": "jest --coverage",
-    "test:watch": "jest --watch",
-    "build": "run-s build:*",
-    "build:clean": "rm -rf ./dist",
-    "build:ts": "tsc",
+    "clean": "rm -rf ./dist ./coverage",
+    "build": "tsc",
+    "generate": "run-s generate:*",
+    "generate:prisma": "prisma generate",
+    "generate:dmmf": "ts-node ./src/scripts/generateDMMF.ts",
+    "test": "run-s test:*",
+    "test:types": "tsc --noEmit",
+    "test:unit": "jest --config jest.config.unit.json",
+    "pretest:integration": "cp -f ./prisma/db.test.sqlite ./prisma/db.integration.sqlite",
+    "test:integration": "jest --config jest.config.integration.json --runInBand",
+    "test:coverage:merge": "nyc merge ./coverage ./coverage/coverage-final.json",
+    "test:coverage:report": "nyc report -t ./coverage --r html -r lcov -r clover",
     "ci": "run-s build test"
   },
   "dependencies": {
     "@47ng/cloak": "^1.1.0-beta.2",
-    "object-path": "^0.11.8",
-    "rfdc": "^1.3.0"
+    "object-path": "^0.11.8"
   },
   "peerDependencies": {
     "@prisma/client": "^3.5.0"
@@ -49,7 +55,10 @@
     "husky": "^7.0.4",
     "jest": "^27.3.1",
     "npm-run-all": "^4.1.5",
+    "nyc": "^15.1.0",
     "prisma": "^3.5.0",
+    "sqlite": "^4.0.23",
+    "sqlite3": "^5.0.2",
     "ts-jest": "^27.0.7",
     "ts-node": "^10.4.0",
     "typescript": "^4.5.2"
@@ -57,10 +66,7 @@
   "jest": {
     "verbose": true,
     "preset": "ts-jest/presets/js-with-ts",
-    "testEnvironment": "node",
-    "testMatch": [
-      "<rootDir>/src/**/*.test.[jt]s?(x)"
-    ]
+    "testEnvironment": "node"
   },
   "prettier": {
     "arrowParens": "avoid",

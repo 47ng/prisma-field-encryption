@@ -7,3 +7,6 @@ src/
 tsconfig.json
 yarn-error.log
 dist/tests/
+dist/scripts/
+prisma/
+jest.config.*

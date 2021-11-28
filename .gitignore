@@ -1,5 +1,4 @@
 node_modules/
 dist/
-.env
 yarn-error.log
 coverage/

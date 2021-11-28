@@ -1,0 +1,9 @@
+{
+  "verbose": true,
+  "collectCoverage": true,
+  "coverageReporters": [["json", { "file": "coverage.integration.json" }]],
+  "coveragePathIgnorePatterns": ["/node_modules/", "<rootDir>/src/tests/"],
+  "preset": "ts-jest/presets/js-with-ts",
+  "testEnvironment": "node",
+  "testMatch": ["<rootDir>/src/tests/*.test.[jt]s?(x)"]
+}
