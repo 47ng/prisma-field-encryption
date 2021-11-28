@@ -1,2 +1,3 @@
 db.integration.sqlite
 *.sqlite-journal
+dmmf.json
