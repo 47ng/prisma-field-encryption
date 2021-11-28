@@ -29,7 +29,7 @@
     "generate": "run-s generate:*",
     "generate:prisma": "prisma generate",
     "generate:dmmf": "ts-node ./src/scripts/generateDMMF.ts",
-    "test": "run-s test:*",
+    "test": "run-s test:**",
     "test:types": "tsc --noEmit",
     "test:unit": "jest --config jest.config.unit.json",
     "pretest:integration": "cp -f ./prisma/db.test.sqlite ./prisma/db.integration.sqlite",
