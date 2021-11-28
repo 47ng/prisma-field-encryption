@@ -6,3 +6,4 @@ coverage/
 src/
 tsconfig.json
 yarn-error.log
+dist/tests/
