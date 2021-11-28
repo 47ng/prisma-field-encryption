@@ -14,11 +14,9 @@ export type EncryptionOperations =
   | 'updateMany'
 
 /**
- * From a given model & field from the DMMF, read annotations & generate
- * associated path matchers for encryption.
+ * Generate matchers for write operations on a given model.
  *
- * @param model a model from the DMMF
- * @param field a field belonging to the model
+ * Note: we need the list of all model descriptors to resolve connections.
  */
 export function getEncryptionMatchersForModel(
   model: DMMFModelDescriptor,
@@ -37,6 +35,15 @@ export function getEncryptionMatchersForModel(
     fieldConfig: refModel.fields[field]
   })
 
+  /**
+   * Generate matchers for this model's connections.
+   *
+   * This allows targeting nested write operations, by visiting
+   * the connected models (target model), checking out if we're
+   * linking to an encrypted field, and extracting its configuration.
+   *
+   * @param makePath path generator function to simplify matchers declaration
+   */
   const makeLinkedMatchers = (
     makePath: (
       relation: string,
@@ -45,25 +52,42 @@ export function getEncryptionMatchersForModel(
     ) => string | false
   ): FieldMatcher[] => {
     return Object.entries(model.connections).reduce<FieldMatcher[]>(
-      (matchers, [targetModelName, { name: field, isList }]) => {
+      (matchers, [targetModelName, connections]) => {
         const targetModel = models.find(
           model => model.name.titleCase === targetModelName
         )
         if (!targetModel) {
           return matchers
         }
-        const targetMatchers = Object.keys(targetModel.fields).reduce<
-          FieldMatcher[]
-        >((targetMatchers, targetField) => {
-          const path = makePath(field, targetField, isList)
-          if (!path) {
-            return targetMatchers
-          }
-          return [
-            ...targetMatchers,
-            makeFieldMatcher(targetField, path, targetModel)
-          ]
-        }, [])
+
+        /**
+         * Note: this model can have many connections to the same targetModel, eg:
+         * - User.posts of type Post[]
+         * - User.pinnedPost of type Post?
+         */
+        const targetMatchers = connections.flatMap(
+          ({ name: connectionName, isList }) =>
+            // Navigate through the target model's fields
+            // keep only those that are encrypted and add
+            // generate matchers for them.
+            Object.keys(targetModel.fields).reduce<FieldMatcher[]>(
+              (targetMatchers, targetField) => {
+                const path = makePath(connectionName, targetField, isList)
+                if (!path) {
+                  return targetMatchers
+                }
+                const fieldConfig = targetModel.fields[targetField]
+                if (!fieldConfig?.encrypt) {
+                  return targetMatchers
+                }
+                return [
+                  ...targetMatchers,
+                  makeFieldMatcher(targetField, path, targetModel)
+                ]
+              },
+              []
+            )
+        )
         return [...matchers, ...targetMatchers]
       },
       []

@@ -24,7 +24,7 @@ export interface ConnectionDescriptor {
 }
 
 // Key: model name (eg: User)
-export type ModelConnections = Record<string, ConnectionDescriptor>
+export type ModelConnections = Record<string, Array<ConnectionDescriptor>>
 
 export interface DMMFModelDescriptor {
   name: {
@@ -75,7 +75,13 @@ export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFAnalysis {
             name: field.name,
             isList: field.isList
           }
-          return { ...connections, [targetModel.name]: connection }
+          return {
+            ...connections,
+            [targetModel.name]: [
+              ...(connections[targetModel.name] ?? []),
+              connection
+            ]
+          }
         },
         {}
       )
