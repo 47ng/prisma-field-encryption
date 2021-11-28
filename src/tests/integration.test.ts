@@ -52,4 +52,119 @@ describe('integration', () => {
     expect(post.content).toMatch(cloakedStringRegex)
     expect(post.title).toEqual("I'm back") // clear text in the database
   })
+  // test('Available APIs with write operations', async () => {
+  //   // params.args.data.name
+  //   // params.args.posts.create.content
+  //   // params.args.posts.create.$.content
+  //   // params.args.posts.connectOrCreate.create.content
+  //   client.user.create({
+  //     data: {
+  //       name: '',
+  //       email,
+  //       posts: {
+  //         create: [{ title: '', content: '' }],
+  //         // create: {
+  //         //   title: '',
+  //         //   content: ''
+  //         // },
+  //         connectOrCreate: {
+  //           create: {
+  //             // cannot be an array
+  //             title: '',
+  //             content: ''
+  //           },
+  //           where: {
+  //             id: 2
+  //           }
+  //         }
+  //       }
+  //     }
+  //   })
+
+  //   // Update
+  //   client.user.update({
+  //     data: {
+  //       name: 'foo'
+  //     },
+  //     where: {
+  //       email
+  //     }
+  //   })
+
+  //   // Update with all possible nested queries:
+  //   // params.args.data.name
+  //   // params.args.data.name.set
+  //   // params.args.data.name
+  //   // params.args.data.posts.create.content
+  //   // params.args.data.posts.connectOrCreate.create.content
+  //   // params.args.data.posts.update.data.content
+  //   // params.args.data.posts.update.data.content.set
+  //   // params.args.data.posts.updateMany.data.content
+  //   // params.args.data.posts.updateMany.data.content.set
+  //   // params.args.data.posts.upsert.create.content
+  //   // params.args.data.posts.upsert.update.content
+  //   // params.args.data.posts.upsert.update.content.set
+
+  //   client.user.update({
+  //     data: {
+  //       name: {
+  //         set: 'foo' // alternative way to set things: update.data.field.set
+  //       },
+  //       posts: {
+  //         create: {
+  //           title: '',
+  //           content: ''
+  //         },
+  //         connectOrCreate: {
+  //           create: {
+  //             title: '',
+  //             content: ''
+  //           },
+  //           where: {
+  //             id: 2
+  //           }
+  //         },
+  //         update: {
+  //           data: {
+  //             content: {
+  //               set: ''
+  //             }
+  //           },
+  //           where: {
+  //             id: 2
+  //           }
+  //         },
+  //         updateMany: {
+  //           data: {
+  //             content: {
+  //               set: ''
+  //             }
+  //           },
+  //           where: {
+  //             published: true
+  //           }
+  //         },
+  //         upsert: {
+  //           create: {
+  //             title: '',
+  //             content: ''
+  //           },
+  //           update: {
+  //             content: {
+  //               set: ''
+  //             }
+  //           },
+  //           where: {
+  //             id: 1
+  //           }
+  //         }
+  //       }
+  //     },
+  //     where: {
+  //       email
+  //     }
+  //   })
+  //   client.user.updateMany()
+  //   client.user.upsert()
+  // })
 })

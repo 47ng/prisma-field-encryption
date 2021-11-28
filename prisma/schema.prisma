@@ -22,3 +22,9 @@ model Post {
   author    User?   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   authorId  Int?
 }
+
+model Unencrypted {
+  id      Int    @id @default(autoincrement())
+  name    String
+  content String
+}

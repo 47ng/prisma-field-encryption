@@ -1,79 +1,9 @@
 import { formatKey } from '@47ng/cloak/dist/key'
-import { configureEncryption, configureKeys } from './encryption'
-import type { FieldsConfiguration } from './types'
+import { configureKeys } from './encryption'
 
 const TEST_KEY = 'k1.aesgcm256.DbQoar8ZLuUsOHZNyrnjlskInHDYlzF3q6y1KGM7DUM='
 
 describe('encryption', () => {
-  type Models = 'User' | 'Post' | 'Unencrypted'
-  const fields: FieldsConfiguration = {
-    'User.name': true,
-    'Post.content': true
-  }
-
-  describe('configureEncryption', () => {
-    const configure = (action: string, model?: Models) => {
-      const params = {
-        action,
-        model,
-        args: [],
-        dataPath: [],
-        runInTransaction: false
-      }
-      return configureEncryption(params, fields)
-    }
-
-    test('unsupported operation', () => {
-      const { encryptOnWrite, decryptOnRead } = configure('unsupported', 'User')
-      expect(encryptOnWrite).toEqual(false)
-      expect(decryptOnRead).toEqual(true)
-    })
-
-    test('operation without model', () => {
-      const { encryptOnWrite, decryptOnRead } = configure('unsupported')
-      expect(encryptOnWrite).toEqual(false)
-      expect(decryptOnRead).toEqual(false) // todo: Maybe should be true ?
-    })
-
-    test('non-encrypted model', () => {
-      const { encryptOnWrite, decryptOnRead } = configure(
-        'findUnique',
-        'Unencrypted'
-      )
-      expect(encryptOnWrite).toEqual(false)
-      expect(decryptOnRead).toEqual(false)
-    })
-
-    test('findUnique', () => {
-      const { encryptOnWrite, decryptOnRead } = configure('findUnique', 'User')
-      expect(encryptOnWrite).toEqual(false)
-      expect(decryptOnRead).toEqual(true)
-    })
-
-    test('findFirst', () => {
-      const { encryptOnWrite, decryptOnRead } = configure('findFirst', 'User')
-      expect(encryptOnWrite).toEqual(false)
-      expect(decryptOnRead).toEqual(true)
-    })
-
-    test('create', () => {
-      const { encryptOnWrite, decryptOnRead } = configure('create', 'User')
-      expect(encryptOnWrite).toEqual(true)
-      expect(decryptOnRead).toEqual(true)
-    })
-
-    test('update', () => {
-      const { encryptOnWrite, decryptOnRead } = configure('update', 'User')
-      expect(encryptOnWrite).toEqual(true)
-      expect(decryptOnRead).toEqual(true)
-    })
-
-    test('upsert', () => {
-      const { encryptOnWrite, decryptOnRead } = configure('upsert', 'User')
-      expect(encryptOnWrite).toEqual(true)
-      expect(decryptOnRead).toEqual(true)
-    })
-  })
   describe('configureKeys', () => {
     test('No encryption key specified', () => {
       const run = () => configureKeys({})

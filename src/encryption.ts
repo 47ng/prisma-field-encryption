@@ -9,60 +9,13 @@ import {
   parseKeySync
 } from '@47ng/cloak'
 import objectPath from 'object-path'
-import rfdc from 'rfdc'
-import type {
-  Configuration,
-  FieldsConfiguration,
-  MiddlewareParams
-} from './types'
+import { matchPaths } from './matchers'
+import type { Configuration, FieldMatcher, MiddlewareParams } from './types'
 import { getStringLeafPaths } from './visitor'
-
-const clone = rfdc({
-  proto: true
-})
-
-export interface EncryptionConfiguration {
-  encryptOnWrite: boolean
-  decryptOnRead: boolean
-}
 
 export interface KeysConfiguration {
   encryptionKey: ParsedCloakKey
   keychain: CloakKeychain
-}
-
-export function configureEncryption(
-  params: MiddlewareParams,
-  fields: FieldsConfiguration
-): EncryptionConfiguration {
-  if (!params.model) {
-    // Model is not available for raw SQL & execute.
-    // For now those operations are not supported.
-    return {
-      encryptOnWrite: false,
-      decryptOnRead: false
-    }
-  }
-
-  const action = String(params.action)
-  const model = String(params.model)
-
-  const isModelEnabled = Object.entries(fields).some(
-    ([key, value]) => key.split('.')[0] === model && value === true
-  )
-
-  const isWriteOperation = [
-    'create',
-    'createMany',
-    'update',
-    'updateMany',
-    'upsert'
-  ].includes(action)
-
-  return {
-    encryptOnWrite: isWriteOperation ? isModelEnabled : false,
-    decryptOnRead: isModelEnabled
-  }
 }
 
 export function configureKeys(config: Configuration): KeysConfiguration {
@@ -94,82 +47,74 @@ export function configureKeys(config: Configuration): KeysConfiguration {
 
 // --
 
-const lowercaseFirstLetter = (input: string) =>
-  input[0].toLowerCase() + input.slice(1)
-
 export function encryptOnWrite(
-  data: any,
+  params: MiddlewareParams,
   keys: KeysConfiguration,
-  fields: FieldsConfiguration,
-  model?: string
+  matchers: FieldMatcher[],
+  operation: string
 ) {
-  // Deep-clone the input to avoid mutating it.
-  // (eg: if reusing objects across queries)
-  const copy = clone(data)
+  const dataPaths = getStringLeafPaths(params.args)
+  const paths = matchPaths(dataPaths, matchers)
 
-  // From the configuration, lowercase the first letter of the models
-  // to match the `include` behaviour in Prisma queries.
-  const encryptedFieldPaths = Object.entries(fields)
-    .filter(([, value]) => value === true)
-    .flatMap(([key]) => {
-      const [model, field] = key.split('.')
-      return [
-        [lowercaseFirstLetter(model), field].join('.'),
-        [lowercaseFirstLetter(model) + 's', 'update', 'data', field].join('.')
-      ]
-    })
+  console.dir(
+    {
+      dataPaths,
+      matchers,
+      encryptionPaths: paths
+    },
+    { depth: Infinity }
+  )
 
-  const paths = getStringLeafPaths(data).filter(dataPath => {
-    // When the dataPath has only one item (root level),
-    // we use the model we're working on as the parentKey.
-    // todo: Handle the {model}s.update.data.{field} case
-    const [leafKey, parentKey = model ?? '', ...rest] = dataPath
-      .split('.')
-      .reverse()
-
-    if (parentKey === 'data' && rest[0] === 'update') {
-      // Nested update
-      const model = rest[1]
-      return encryptedFieldPaths.includes(
-        [model, 'update', 'data', leafKey].join('.')
-      )
-    }
-    return encryptedFieldPaths.includes(
-      [lowercaseFirstLetter(parentKey), leafKey].join('.')
-    )
-  })
-  paths.forEach(path => {
+  // We use immer to clone parts of the params tree that need editing,
+  // to avoid mutating user-side query object references.
+  // See https://github.com/47ng/prisma-field-encryption/issues/3
+  paths.forEach(({ path }) => {
     try {
-      const cleartext = objectPath.get(copy, path)
+      // no need to check for fieldConfig.encrypt, fields have been filtered
+      // out when building the matchers list
+      const cleartext = objectPath.get(params.args, path)
       const ciphertext = encryptStringSync(cleartext, keys.encryptionKey)
-      objectPath.set(copy, path, ciphertext)
+      console.dir({ path, cleartext, ciphertext })
+      objectPath.set(params.args, path, ciphertext)
     } catch (error) {
       console.error(
-        `[prisma-field-encryption] Error encrypting field ${path}: ${error}`
+        `[prisma-field-encryption] Error encrypting field ${path} (in operation ${operation}): ${error}`
       )
     }
   })
-  return copy
 }
 
-export function decryptOnRead(data: any, keys: KeysConfiguration) {
-  const paths = getStringLeafPaths(data)
+export function decryptOnRead(
+  params: MiddlewareParams,
+  result: any,
+  keys: KeysConfiguration,
+  matchers: FieldMatcher[],
+  operation: string
+) {
+  const resultPaths = getStringLeafPaths(result)
+  const paths = matchPaths(resultPaths, matchers)
+
+  console.dir(
+    { resultPaths, decryptionPaths: paths, matchers },
+    { depth: Infinity }
+  )
+
   // No need to deep clone the data as it comes from the database,
   // nobody else has a reference on it.
-  paths.forEach(path => {
+  paths.forEach(({ path, fieldConfig }) => {
     try {
-      const ciphertext = objectPath.get(data, path)
-      if (!ciphertext.match(cloakedStringRegex)) {
+      const ciphertext = objectPath.get(result, path)
+      if (!cloakedStringRegex.test(ciphertext)) {
         return
       }
       const decryptionKey = findKeyForMessage(ciphertext, keys.keychain)
       const cleartext = decryptStringSync(ciphertext, decryptionKey)
-      objectPath.set(data, path, cleartext)
+      console.dir({ path, ciphertext, cleartext })
+      objectPath.set(result, path, cleartext)
     } catch (error) {
       console.error(
-        `[prisma-field-encryption] Error decrypting field ${path}: ${error}`
+        `[prisma-field-encryption] Error decrypting field ${path} (in operation ${operation}): ${error} `
       )
     }
   })
-  return data
 }

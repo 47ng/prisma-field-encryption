@@ -3,7 +3,10 @@ type Collection = Array<any> | Record<any, any>
 type Element = Collection | LeafNode
 
 function isObject(obj: any): obj is object {
-  return Object.prototype.toString.call(obj) === '[object Object]'
+  return (
+    typeof obj === 'object' &&
+    Object.prototype.toString.call(obj) === '[object Object]'
+  )
 }
 
 export function getStringLeafPaths(input: Element, path?: string): string[] {

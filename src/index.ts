@@ -1,10 +1,5 @@
-import { configureFields } from './dmmf'
-import {
-  configureEncryption,
-  configureKeys,
-  decryptOnRead,
-  encryptOnWrite
-} from './encryption'
+import { configureKeys, decryptOnRead, encryptOnWrite } from './encryption'
+import { configureMatchers } from './matchers'
 import type { Configuration, Middleware, MiddlewareParams } from './types'
 
 export function fieldEncryptionMiddleware(
@@ -13,14 +8,21 @@ export function fieldEncryptionMiddleware(
   // This will throw if the encryption key is missing
   // or if anything is invalid.
   const keys = configureKeys(config)
-  const fields = configureFields()
+  const matchers = configureMatchers()
+
+  console.dir(
+    {
+      _: 'fieldEncryptionMiddleware - setup',
+      keys,
+      matchers
+    },
+    { depth: Infinity }
+  )
 
   return async (
     params: MiddlewareParams,
     next: (params: MiddlewareParams) => Promise<any>
   ) => {
-    const encryptionConfig = configureEncryption(params, fields)
-
     const logger =
       process.env.PRISMA_FIELD_ENCRYPTION_LOG === 'true'
         ? console
@@ -32,6 +34,11 @@ export function fieldEncryptionMiddleware(
             warn: console.warn // and warnings
           }
 
+    if (!params.model) {
+      // Unsupported
+      return await next(params)
+    }
+
     const operation = `${params.model}.${params.action}`
 
     logger.info('------------------------------------------------------------')
@@ -40,29 +47,26 @@ export function fieldEncryptionMiddleware(
         _: `${operation} - fieldEncryptionMiddleware - pre-encrypt`,
         config,
         context: {
-          fields,
-          ...keys,
-          ...encryptionConfig
+          matchers
+          // ...keys
         },
         params
       },
       { depth: Infinity }
     )
+    const encryptionMatchers =
+      matchers.encryption[params.model][params.action] ?? []
 
-    if (encryptionConfig.encryptOnWrite) {
-      const data = encryptOnWrite(
-        params.args.data,
-        keys,
-        fields,
-        params.model && String(params.model)
-      )
-      params.args.data = data
+    if (encryptionMatchers.length) {
+      // Params are mutated in-place for modifications to occur.
+      // See https://github.com/prisma/prisma/issues/9522
+      encryptOnWrite(params, keys, encryptionMatchers, operation)
     }
 
     logger.dir(
       {
         _: `${operation} - fieldEncryptionMiddleware - before next`,
-        params
+        params: params
       },
       { depth: Infinity }
     )
@@ -77,9 +81,7 @@ export function fieldEncryptionMiddleware(
       { depth: Infinity }
     )
 
-    if (encryptionConfig.decryptOnRead) {
-      result = decryptOnRead(result, keys)
-    }
+    decryptOnRead(params, result, keys, matchers.decryption, operation)
 
     logger.dir(
       {
