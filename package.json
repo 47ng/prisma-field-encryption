@@ -25,6 +25,7 @@
   },
   "scripts": {
     "clean": "rm -rf ./dist ./coverage",
+    "prebuild": "run-s generate:prisma",
     "build": "tsc",
     "generate": "run-s generate:*",
     "generate:prisma": "prisma generate",
