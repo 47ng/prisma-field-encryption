@@ -55,6 +55,8 @@ const writeOperations = [
   'upsert'
 ]
 
+const whereClauseRegExp = /\.where\./
+
 export function encryptOnWrite(
   params: MiddlewareParams,
   keys: KeysConfiguration,
@@ -77,6 +79,11 @@ export function encryptOnWrite(
     }) {
       if (!fieldConfig.encrypt) {
         return
+      }
+      if (whereClauseRegExp.test(path)) {
+        console.warn(`[prisma-field-encryption] Warning: you're using an encrypted field in a \`where\` clause.
+  -> In ${operation}: ${path}
+  This will not work, read more: https://github.com/47ng/prisma-field-encryption#caveats--limitations`)
       }
       try {
         const cipherText = encryptStringSync(clearText, keys.encryptionKey)
