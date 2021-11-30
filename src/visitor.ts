@@ -1,47 +1,83 @@
-type LeafNode = string | number | boolean | bigint
-type Collection = Array<any> | Record<any, any>
-type Element = Collection | LeafNode
+import { DMMFModels } from './dmmf'
+import { Item, traverseTree } from './traverseTree'
+import type { FieldConfiguration, MiddlewareParams } from './types'
 
-function isObject(obj: any): obj is object {
-  return (
-    typeof obj === 'object' &&
-    Object.prototype.toString.call(obj) === '[object Object]'
-  )
+interface VisitorState {
+  currentModel: string
 }
 
-export function getStringLeafPaths(input: Element, path?: string): string[] {
-  if (isObject(input) || Array.isArray(input)) {
-    return Object.entries(input)
-      .filter(
-        ([, value]) =>
-          typeof value === 'string' || Array.isArray(value) || isObject(value)
-      )
-      .reduce((out, [key, value]) => {
-        if (typeof value === 'string') {
-          return [...out, path ? [path, key].join('.') : key]
-        }
-        if (Array.isArray(value)) {
-          return [
-            ...out,
-            ...value.flatMap((item, index) =>
-              getStringLeafPaths(
-                item,
-                path ? [path, key, index].join('.') : [key, index].join('.')
-              )
-            )
-          ]
-        }
-        if (isObject(value)) {
-          return [
-            ...out,
-            ...getStringLeafPaths(value, path ? [path, key].join('.') : key)
-          ]
-        }
-        return out
-      }, [] as string[])
+export interface TargetField {
+  path: string
+  value: string
+  model: string
+  field: string
+  fieldConfig: FieldConfiguration
+}
+
+export type TargetFieldVisitorFn = (targetField: TargetField) => void
+
+const makeVisitor = (models: DMMFModels, visitor: TargetFieldVisitorFn) =>
+  function visitNode(state: VisitorState, { key, type, node, path }: Item) {
+    const model = models[state.currentModel]
+    if (!model || !key) {
+      return state
+    }
+    if (type === 'string' && key in model.fields) {
+      const targetField: TargetField = {
+        field: key,
+        model: state.currentModel,
+        fieldConfig: model.fields[key],
+        path: path.join('.'),
+        value: node as string
+      }
+      visitor(targetField)
+      return state
+    }
+    // Special case: update.{field}.set
+    if (
+      type === 'object' &&
+      key in model.fields &&
+      path[path.length - 2] === 'update' &&
+      typeof (node as any)?.set === 'string'
+    ) {
+      const value: string = (node as any).set
+      const targetField: TargetField = {
+        field: key,
+        model: state.currentModel,
+        fieldConfig: model.fields[key],
+        path: path.join('.') + '.set',
+        value
+      }
+      visitor(targetField)
+      return state
+    }
+    if (['object', 'array'].includes(type) && key in model.connections) {
+      // Follow the connection: from there on downwards, we're changing models.
+      // Return a new object to break from existing references.
+      return {
+        currentModel: model.connections[key].modelName
+      }
+    }
+    return state
   }
-  if (typeof input === 'string' && path) {
-    return [path]
-  }
-  return []
+
+export function visitInputTargetFields(
+  params: MiddlewareParams,
+  models: DMMFModels,
+  visitor: TargetFieldVisitorFn
+) {
+  traverseTree(params.args, makeVisitor(models, visitor), {
+    currentModel: params.model!
+  })
+}
+
+export function visitOutputTargetFields(
+  params: MiddlewareParams,
+  result: any,
+  models: DMMFModels,
+  visitor: TargetFieldVisitorFn
+) {
+  traverseTree(result, makeVisitor(models, visitor), {
+    currentModel: params.model!
+  })
 }

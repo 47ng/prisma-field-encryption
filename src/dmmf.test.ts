@@ -1,5 +1,5 @@
 import { getDMMF } from '@prisma/sdk'
-import { analyseDMMF, DMMFAnalysis, parseAnnotation } from './dmmf'
+import { analyseDMMF, DMMFModels, parseAnnotation } from './dmmf'
 
 describe('dmmf', () => {
   describe('parseAnnotation', () => {
@@ -77,29 +77,32 @@ describe('dmmf', () => {
       `
     })
     const received = analyseDMMF(dmmf)
-    const expected: DMMFAnalysis = {
-      models: [
-        {
-          name: { titleCase: 'User', lowercase: 'user', plural: 'users' },
-          fields: { name: { encrypt: true, strictDecryption: false } },
-          connections: {
-            Post: [
-              { name: 'posts', isList: true },
-              { name: 'pinnedPost', isList: false }
-            ]
-          }
+    const expected: DMMFModels = {
+      User: {
+        fields: {
+          name: { encrypt: true, strictDecryption: false }
         },
-        {
-          name: { titleCase: 'Post', lowercase: 'post', plural: 'posts' },
-          fields: { content: { encrypt: true, strictDecryption: false } },
-          connections: {
-            User: [
-              { name: 'author', isList: false },
-              { name: 'havePinned', isList: true }
-            ]
-          }
+        connections: {
+          posts: { modelName: 'Post', isList: true },
+          pinnedPost: { modelName: 'Post', isList: false }
         }
-      ]
+      },
+      Post: {
+        fields: {
+          content: { encrypt: true, strictDecryption: false }
+        },
+        connections: {
+          author: { modelName: 'User', isList: false },
+          categories: { modelName: 'Category', isList: true },
+          havePinned: { modelName: 'User', isList: true }
+        }
+      },
+      Category: {
+        fields: {},
+        connections: {
+          posts: { modelName: 'Post', isList: true }
+        }
+      }
     }
     expect(received).toEqual(expected)
   })

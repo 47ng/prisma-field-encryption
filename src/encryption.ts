@@ -8,10 +8,10 @@ import {
   ParsedCloakKey,
   parseKeySync
 } from '@47ng/cloak'
+import { DMMFModels } from './dmmf'
 import objectPath from 'object-path'
-import { matchPaths } from './matchers'
-import type { Configuration, FieldMatcher, MiddlewareParams } from './types'
-import { getStringLeafPaths } from './visitor'
+import type { Configuration, MiddlewareParams } from './types'
+import { visitInputTargetFields, visitOutputTargetFields } from './visitor'
 
 export interface KeysConfiguration {
   encryptionKey: ParsedCloakKey
@@ -47,74 +47,84 @@ export function configureKeys(config: Configuration): KeysConfiguration {
 
 // --
 
+const writeOperations = [
+  'create',
+  'createMany',
+  'update',
+  'updateMany',
+  'upsert'
+]
+
 export function encryptOnWrite(
   params: MiddlewareParams,
   keys: KeysConfiguration,
-  matchers: FieldMatcher[],
+  models: DMMFModels,
   operation: string
 ) {
-  const dataPaths = getStringLeafPaths(params.args)
-  const paths = matchPaths(dataPaths, matchers)
+  if (!writeOperations.includes(params.action)) {
+    return // No input data to encrypt
+  }
 
-  console.dir(
-    {
-      dataPaths,
-      matchers,
-      encryptionPaths: paths
-    },
-    { depth: Infinity }
-  )
-
-  // We use immer to clone parts of the params tree that need editing,
-  // to avoid mutating user-side query object references.
-  // See https://github.com/47ng/prisma-field-encryption/issues/3
-  paths.forEach(({ path }) => {
-    try {
-      // no need to check for fieldConfig.encrypt, fields have been filtered
-      // out when building the matchers list
-      const cleartext = objectPath.get(params.args, path)
-      const ciphertext = encryptStringSync(cleartext, keys.encryptionKey)
-      console.dir({ path, cleartext, ciphertext })
-      objectPath.set(params.args, path, ciphertext)
-    } catch (error) {
-      console.error(
-        `[prisma-field-encryption] Error encrypting field ${path} (in operation ${operation}): ${error}`
-      )
+  visitInputTargetFields(
+    params,
+    models,
+    function encryptFieldValue({
+      fieldConfig,
+      value: clearText,
+      path,
+      model,
+      field
+    }) {
+      if (!fieldConfig.encrypt) {
+        return
+      }
+      try {
+        const cipherText = encryptStringSync(clearText, keys.encryptionKey)
+        console.dir({ path, clearText, cipherText })
+        objectPath.set(params.args, path, cipherText)
+      } catch (error) {
+        console.error(
+          `[prisma-field-encryption] Error encrypting field ${model}.${field} at ${path} (in operation ${operation}): ${error}`
+        )
+      }
     }
-  })
+  )
 }
 
 export function decryptOnRead(
   params: MiddlewareParams,
   result: any,
   keys: KeysConfiguration,
-  matchers: FieldMatcher[],
+  models: DMMFModels,
   operation: string
 ) {
-  const resultPaths = getStringLeafPaths(result)
-  const paths = matchPaths(resultPaths, matchers)
-
-  console.dir(
-    { resultPaths, decryptionPaths: paths, matchers },
-    { depth: Infinity }
-  )
-
-  // No need to deep clone the data as it comes from the database,
-  // nobody else has a reference on it.
-  paths.forEach(({ path, fieldConfig }) => {
-    try {
-      const ciphertext = objectPath.get(result, path)
-      if (!cloakedStringRegex.test(ciphertext)) {
-        return
+  visitOutputTargetFields(
+    params,
+    result,
+    models,
+    function decryptFieldValue({
+      fieldConfig,
+      value: cipherText,
+      path,
+      model,
+      field
+    }) {
+      try {
+        if (!cloakedStringRegex.test(cipherText)) {
+          return
+        }
+        const decryptionKey = findKeyForMessage(cipherText, keys.keychain)
+        const clearText = decryptStringSync(cipherText, decryptionKey)
+        console.dir({ path, cipherText, clearText })
+        objectPath.set(result, path, clearText)
+      } catch (error) {
+        console.error(
+          `[prisma-field-encryption] Error decrypting field ${model}.${field} at ${path} (in operation ${operation}): ${error} `
+        )
+        if (fieldConfig.strictDecryption) {
+          throw error
+        }
       }
-      const decryptionKey = findKeyForMessage(ciphertext, keys.keychain)
-      const cleartext = decryptStringSync(ciphertext, decryptionKey)
-      console.dir({ path, ciphertext, cleartext })
-      objectPath.set(result, path, cleartext)
-    } catch (error) {
-      console.error(
-        `[prisma-field-encryption] Error decrypting field ${path} (in operation ${operation}): ${error} `
-      )
     }
-  })
+  )
 }

@@ -1,5 +1,5 @@
+import { analyseDMMF } from './dmmf'
 import { configureKeys, decryptOnRead, encryptOnWrite } from './encryption'
-import { configureMatchers } from './matchers'
 import type { Configuration, Middleware, MiddlewareParams } from './types'
 
 export function fieldEncryptionMiddleware(
@@ -8,13 +8,13 @@ export function fieldEncryptionMiddleware(
   // This will throw if the encryption key is missing
   // or if anything is invalid.
   const keys = configureKeys(config)
-  const matchers = configureMatchers()
+  const models = analyseDMMF()
 
   console.dir(
     {
       _: 'fieldEncryptionMiddleware - setup',
       keys,
-      matchers
+      models
     },
     { depth: Infinity }
   )
@@ -35,7 +35,7 @@ export function fieldEncryptionMiddleware(
           }
 
     if (!params.model) {
-      // Unsupported
+      // Unsupported operation
       return await next(params)
     }
 
@@ -46,22 +46,14 @@ export function fieldEncryptionMiddleware(
       {
         _: `${operation} - fieldEncryptionMiddleware - pre-encrypt`,
         config,
-        context: {
-          matchers
-          // ...keys
-        },
         params
       },
       { depth: Infinity }
     )
-    const encryptionMatchers =
-      matchers.encryption[params.model][params.action] ?? []
 
-    if (encryptionMatchers.length) {
-      // Params are mutated in-place for modifications to occur.
-      // See https://github.com/prisma/prisma/issues/9522
-      encryptOnWrite(params, keys, encryptionMatchers, operation)
-    }
+    // Params are mutated in-place for modifications to occur.
+    // See https://github.com/prisma/prisma/issues/9522
+    encryptOnWrite(params, keys, models, operation)
 
     logger.dir(
       {
@@ -81,7 +73,7 @@ export function fieldEncryptionMiddleware(
       { depth: Infinity }
     )
 
-    decryptOnRead(params, result, keys, matchers.decryption, operation)
+    decryptOnRead(params, result, keys, models, operation)
 
     logger.dir(
       {
