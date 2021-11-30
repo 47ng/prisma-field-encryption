@@ -4,7 +4,6 @@ import * as sqlite from './sqlite'
 
 describe('integration', () => {
   const email = '007@hmss.gov.uk'
-  // process.env.PRISMA_FIELD_ENCRYPTION_LOG = 'true'
 
   test('create user', async () => {
     const received = await client.user.create({

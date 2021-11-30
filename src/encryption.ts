@@ -8,8 +8,8 @@ import {
   ParsedCloakKey,
   parseKeySync
 } from '@47ng/cloak'
-import { DMMFModels } from './dmmf'
 import objectPath from 'object-path'
+import type { DMMFModels } from './dmmf'
 import type { Configuration, MiddlewareParams } from './types'
 import { visitInputTargetFields, visitOutputTargetFields } from './visitor'
 
@@ -80,7 +80,6 @@ export function encryptOnWrite(
       }
       try {
         const cipherText = encryptStringSync(clearText, keys.encryptionKey)
-        console.dir({ path, clearText, cipherText })
         objectPath.set(params.args, path, cipherText)
       } catch (error) {
         console.error(
@@ -115,7 +114,6 @@ export function decryptOnRead(
         }
         const decryptionKey = findKeyForMessage(cipherText, keys.keychain)
         const clearText = decryptStringSync(cipherText, decryptionKey)
-        console.dir({ path, cipherText, clearText })
         objectPath.set(result, path, clearText)
       } catch (error) {
         console.error(
