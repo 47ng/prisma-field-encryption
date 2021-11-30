@@ -8,23 +8,28 @@ generator client {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String? /// @encrypted
-  posts Post[]
+  id           Int     @id @default(autoincrement())
+  email        String  @unique
+  name         String? /// @encrypted
+  posts        Post[]
+  pinnedPost   Post?   @relation(fields: [pinnedPostId], references: [id], name: "pinnedPost")
+  pinnedPostId Int?
 }
 
 model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String? /// @encrypted <- annotate fields to encrypt (must be a String)
-  published Boolean @default(false)
-  author    User?   @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  authorId  Int?
+  id         Int        @id @default(autoincrement())
+  title      String
+  content    String? /// @encrypted
+  published  Boolean    @default(false)
+  author     User?      @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  authorId   Int?
+  categories Category[]
+  havePinned User[]     @relation("pinnedPost")
 }
 
-model Unencrypted {
-  id      Int    @id @default(autoincrement())
-  name    String
-  content String
+// Model without encrypted fields
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  posts Post[]
 }
