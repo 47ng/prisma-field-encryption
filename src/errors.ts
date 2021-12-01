@@ -10,7 +10,7 @@ export const errors = {
   noEncryptionKey: prefixError('no encryption key provided.'),
   unsupportedFieldType: (model: Prisma.DMMF.Model, field: Prisma.DMMF.Field) =>
     prefixError(
-      `encryption enabled on unsupported ${field.type} field ${model.name}.${field.name}. Only String fields can be encrypted.`
+      `encryption enabled for field ${model.name}.${field.name} of unsupported type ${field.type}: only String fields can be encrypted.`
     ),
 
   // Runtime errors
