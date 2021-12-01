@@ -10,7 +10,7 @@ async function openDatabase() {
 }
 
 export interface SQLiteQuery {
-  table: 'User' | 'Post'
+  table: 'User' | 'Post' | 'Category'
   where?: {
     [field: string]: string
   }

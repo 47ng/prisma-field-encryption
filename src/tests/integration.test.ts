@@ -51,119 +51,78 @@ describe('integration', () => {
     expect(post.content).toMatch(cloakedStringRegex)
     expect(post.title).toEqual("I'm back") // clear text in the database
   })
-  // test('Available APIs with write operations', async () => {
-  //   // params.args.data.name
-  //   // params.args.posts.create.content
-  //   // params.args.posts.create.$.content
-  //   // params.args.posts.connectOrCreate.create.content
-  //   client.user.create({
-  //     data: {
-  //       name: '',
-  //       email,
-  //       posts: {
-  //         create: [{ title: '', content: '' }],
-  //         // create: {
-  //         //   title: '',
-  //         //   content: ''
-  //         // },
-  //         connectOrCreate: {
-  //           create: {
-  //             // cannot be an array
-  //             title: '',
-  //             content: ''
-  //           },
-  //           where: {
-  //             id: 2
-  //           }
-  //         }
-  //       }
-  //     }
-  //   })
 
-  //   // Update
-  //   client.user.update({
-  //     data: {
-  //       name: 'foo'
-  //     },
-  //     where: {
-  //       email
-  //     }
-  //   })
+  test('update user (with set)', async () => {
+    const received = await client.user.update({
+      data: {
+        name: {
+          set: 'Bond, James Bond.'
+        }
+      },
+      where: {
+        email
+      }
+    })
+    const user = await sqlite.get({ table: 'User', where: { email } })
+    expect(received.name).toEqual('Bond, James Bond.')
+    expect(user.name).toMatch(cloakedStringRegex)
+  })
 
-  //   // Update with all possible nested queries:
-  //   // params.args.data.name
-  //   // params.args.data.name.set
-  //   // params.args.data.name
-  //   // params.args.data.posts.create.content
-  //   // params.args.data.posts.connectOrCreate.create.content
-  //   // params.args.data.posts.update.data.content
-  //   // params.args.data.posts.update.data.content.set
-  //   // params.args.data.posts.updateMany.data.content
-  //   // params.args.data.posts.updateMany.data.content.set
-  //   // params.args.data.posts.upsert.create.content
-  //   // params.args.data.posts.upsert.update.content
-  //   // params.args.data.posts.upsert.update.content.set
-
-  //   client.user.update({
-  //     data: {
-  //       name: {
-  //         set: 'foo' // alternative way to set things: update.data.field.set
-  //       },
-  //       posts: {
-  //         create: {
-  //           title: '',
-  //           content: ''
-  //         },
-  //         connectOrCreate: {
-  //           create: {
-  //             title: '',
-  //             content: ''
-  //           },
-  //           where: {
-  //             id: 2
-  //           }
-  //         },
-  //         update: {
-  //           data: {
-  //             content: {
-  //               set: ''
-  //             }
-  //           },
-  //           where: {
-  //             id: 2
-  //           }
-  //         },
-  //         updateMany: {
-  //           data: {
-  //             content: {
-  //               set: ''
-  //             }
-  //           },
-  //           where: {
-  //             published: true
-  //           }
-  //         },
-  //         upsert: {
-  //           create: {
-  //             title: '',
-  //             content: ''
-  //           },
-  //           update: {
-  //             content: {
-  //               set: ''
-  //             }
-  //           },
-  //           where: {
-  //             id: 1
-  //           }
-  //         }
-  //       }
-  //     },
-  //     where: {
-  //       email
-  //     }
-  //   })
-  //   client.user.updateMany()
-  //   client.user.upsert()
-  // })
+  test('complex query nesting', async () => {
+    const received = await client.user.create({
+      data: {
+        email: '006@hmss.gov.uk',
+        name: 'Alec Trevelyan',
+        posts: {
+          create: [
+            {
+              title: '006 - First report',
+              content: 'For England, James?'
+            },
+            {
+              title: 'Janus Quotes',
+              content: "I've set the timers for six minutes",
+              categories: {
+                create: {
+                  name: 'Quotes'
+                }
+              }
+            }
+          ]
+        }
+      },
+      include: {
+        posts: {
+          include: {
+            categories: true
+          }
+        }
+      }
+    })
+    expect(received.name).toEqual('Alec Trevelyan')
+    expect(received.posts[0].content).toEqual('For England, James?')
+    expect(received.posts[1].content).toEqual(
+      "I've set the timers for six minutes"
+    )
+    const user = await sqlite.get({
+      table: 'User',
+      where: { email: '006@hmss.gov.uk' }
+    })
+    const post1 = await sqlite.get({
+      table: 'Post',
+      where: { id: received.posts[0].id.toString() }
+    })
+    const post2 = await sqlite.get({
+      table: 'Post',
+      where: { id: received.posts[1].id.toString() }
+    })
+    const category = await sqlite.get({
+      table: 'Category',
+      where: { name: 'Quotes' }
+    })
+    expect(user.name).toMatch(cloakedStringRegex)
+    expect(post1.content).toMatch(cloakedStringRegex)
+    expect(post2.content).toMatch(cloakedStringRegex)
+    expect(category.name).toEqual('Quotes')
+  })
 })

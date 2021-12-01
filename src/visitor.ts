@@ -33,11 +33,10 @@ const makeVisitor = (models: DMMFModels, visitor: TargetFieldVisitorFn) =>
       visitor(targetField)
       return state
     }
-    // Special case: update.{field}.set
+    // Special case: {field}.set for updates
     if (
       type === 'object' &&
       key in model.fields &&
-      path[path.length - 2] === 'update' &&
       typeof (node as any)?.set === 'string'
     ) {
       const value: string = (node as any).set
