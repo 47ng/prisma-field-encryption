@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client'
+import { errors, warnings } from './errors'
 import type { DMMF, FieldConfiguration } from './types'
 
 export interface ConnectionDescriptor {
@@ -31,6 +32,9 @@ export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFModels {
             model.name,
             field.name
           )
+          if (fieldConfig && field.type !== 'String') {
+            throw new Error(errors.unsupportedFieldType(model, field))
+          }
           return fieldConfig ? { ...fields, [field.name]: fieldConfig } : fields
         },
         {}
@@ -77,10 +81,14 @@ export function parseAnnotation(
   const readonly = query.get('readonly') !== null
   const strict = query.get('strict') !== null
   /* istanbul ignore next */
-  if (process.env.NODE_ENV === 'development' && strict && readonly) {
-    console.warn(
-      `[prisma-field-encryption] Warning: the field ${model}.${field} defines both 'strict' and 'readonly'.\nStrict decryption is disabled in read-only mode (to handle new unencrypted data).`
-    )
+  if (
+    process.env.NODE_ENV === 'development' &&
+    strict &&
+    readonly &&
+    model &&
+    field
+  ) {
+    console.warn(warnings.strictAndReadonlyAnnotation(model, field))
   }
   return {
     encrypt: !readonly,

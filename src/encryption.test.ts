@@ -1,5 +1,6 @@
 import { formatKey } from '@47ng/cloak/dist/key'
 import { configureKeys } from './encryption'
+import { errors } from './errors'
 
 const TEST_KEY = 'k1.aesgcm256.DbQoar8ZLuUsOHZNyrnjlskInHDYlzF3q6y1KGM7DUM='
 
@@ -7,7 +8,7 @@ describe('encryption', () => {
   describe('configureKeys', () => {
     test('No encryption key specified', () => {
       const run = () => configureKeys({})
-      expect(run).toThrowError(/No encryption key provided/)
+      expect(run).toThrowError(errors.noEncryptionKey)
     })
 
     test('Providing encryptionKey directly', () => {

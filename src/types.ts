@@ -1,4 +1,3 @@
-// @ts-ignore
 import { Prisma } from '@prisma/client'
 
 // Prisma types --

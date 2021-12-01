@@ -10,6 +10,7 @@ import {
 } from '@47ng/cloak'
 import objectPath from 'object-path'
 import type { DMMFModels } from './dmmf'
+import { errors, warnings } from './errors'
 import type { Configuration, MiddlewareParams } from './types'
 import { visitInputTargetFields, visitOutputTargetFields } from './visitor'
 
@@ -23,7 +24,7 @@ export function configureKeys(config: Configuration): KeysConfiguration {
     config.encryptionKey || process.env.PRISMA_FIELD_ENCRYPTION_KEY
 
   if (!encryptionKey) {
-    throw new Error('[prisma-field-encryption] No encryption key provided.')
+    throw new Error(errors.noEncryptionKey)
   }
 
   const decryptionKeysFromEnv = (process.env.PRISMA_FIELD_DECRYPTION_KEYS ?? '')
@@ -67,6 +68,8 @@ export function encryptOnWrite(
     return // No input data to encrypt
   }
 
+  const encryptionErrors: string[] = []
+
   visitInputTargetFields(
     params,
     models,
@@ -81,20 +84,21 @@ export function encryptOnWrite(
         return
       }
       if (whereClauseRegExp.test(path)) {
-        console.warn(`[prisma-field-encryption] Warning: you're using an encrypted field in a \`where\` clause.
-  -> In ${operation}: ${path}
-  This will not work, read more: https://github.com/47ng/prisma-field-encryption#caveats--limitations`)
+        console.warn(warnings.whereClause(operation, path))
       }
       try {
         const cipherText = encryptStringSync(clearText, keys.encryptionKey)
         objectPath.set(params.args, path, cipherText)
       } catch (error) {
-        console.error(
-          `[prisma-field-encryption] Error encrypting field ${model}.${field} at ${path} (in operation ${operation}): ${error}`
+        encryptionErrors.push(
+          errors.fieldEncryptionError(model, field, path, error)
         )
       }
     }
   )
+  if (encryptionErrors.length > 0) {
+    throw new Error(errors.encryptionErrorReport(operation, encryptionErrors))
+  }
 }
 
 export function decryptOnRead(
@@ -104,6 +108,9 @@ export function decryptOnRead(
   models: DMMFModels,
   operation: string
 ) {
+  const decryptionErrors: string[] = []
+  const fatalDecryptionErrors: string[] = []
+
   visitOutputTargetFields(
     params,
     result,
@@ -123,13 +130,21 @@ export function decryptOnRead(
         const clearText = decryptStringSync(cipherText, decryptionKey)
         objectPath.set(result, path, clearText)
       } catch (error) {
-        console.error(
-          `[prisma-field-encryption] Error decrypting field ${model}.${field} at ${path} (in operation ${operation}): ${error} `
-        )
+        const message = errors.fieldDecryptionError(model, field, path, error)
         if (fieldConfig.strictDecryption) {
-          throw error
+          fatalDecryptionErrors.push(message)
+        } else {
+          decryptionErrors.push(message)
         }
       }
     }
   )
+  if (decryptionErrors.length > 0) {
+    console.error(errors.encryptionErrorReport(operation, decryptionErrors))
+  }
+  if (fatalDecryptionErrors.length > 0) {
+    throw new Error(
+      errors.decryptionErrorReport(operation, fatalDecryptionErrors)
+    )
+  }
 }
