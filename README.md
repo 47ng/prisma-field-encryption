@@ -101,6 +101,16 @@ _Tip: make sure you use a triple-slash. Double slash comments won't work._
 
 ### 4. Regenerate your client
 
+Make sure you have a generator for the Prisma client:
+
+```graphql
+generator client {
+  provider = "prisma-client-js"
+}
+```
+
+Then generate it using the `prisma` CLI:
+
 ```shell
 $ prisma generate
 ```
