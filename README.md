@@ -123,8 +123,8 @@ Adding encryption to an existing field is a transparent operation: Prisma will
 encrypt data on new writes, and decrypt on read when data is encrypted, but
 your existing data will remain in clear text.
 
-Encrypting existing data should be done in a migration. We provide an automatic
-migration generator in the form of a Prisma generator.
+Encrypting existing data should be done in a migration. The package comes with
+a built-in automatic migration generator, in the form of a Prisma generator:
 
 ```graphql
 generator client {
@@ -154,10 +154,10 @@ export async function migrate(
 )
 ```
 
-### Following Migrations Progress
-
 The progress report callback is optional, and will log progress to the console
 if ommitted.
+
+### Following Migrations Progress
 
 A progress report is an object with the following fields:
 
@@ -185,11 +185,11 @@ model User {
 }
 ```
 
-Cursor fields have to respect the following constraints:
+A cursor field has to respect the following constraints:
 
-- Be @unique
+- Be `@unique`
 - Be of type Int or String
-- Not be encrypted themselves
+- Not be encrypted itself
 
 ## Key Management
 
