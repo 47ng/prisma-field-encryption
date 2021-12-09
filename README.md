@@ -123,13 +123,73 @@ Adding encryption to an existing field is a transparent operation: Prisma will
 encrypt data on new writes, and decrypt on read when data is encrypted, but
 your existing data will remain in clear text.
 
-Encrypting existing data should be done in a migration. We will provide tools
-to help with this in a future update.
+Encrypting existing data should be done in a migration. We provide an automatic
+migration generator in the form of a Prisma generator.
 
-**Roadmap:**
+```graphql
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
+}
 
-- [ ] Add facilities to encrypt & decrypt existing data
-- [ ] Automate migration generation if possible
+generator fieldEncryptionMigrations {
+  provider = "prisma-field-encryption"
+  output   = "./where/you/want/your/migrations"
+}
+```
+
+_Tip: the migrations generator makes use of the `interactiveTransactions` preview feature. Make sure it's enabled on your Prisma Client generator._
+
+Your migrations directory will contain:
+
+- One migration per model
+- An `index.ts` file that runs them all concurrently
+
+All migrations files follow the same API:
+
+```ts
+export async function migrate(
+  client: PrismaClient,
+  reportProgress?: ProgressReportCallback
+)
+```
+
+### Following Migrations Progress
+
+The progress report callback is optional, and will log progress to the console
+if ommitted.
+
+A progress report is an object with the following fields:
+
+- `model`: The model name
+- `processed`: How many records have been processed
+- `totalCount`: How many records were present at the start of the migration
+- `performance`: How long it took to update the last record (in ms)
+
+Note: because the totalCount is only computed once, additions or deletions
+while a migration is running may cause the final processedCount to not equal
+totalCount.
+
+### Custom Cursors
+
+By default, records will be iterated upon by increasing order of a model's `@id`
+field. Only Int or String IDs are supported.
+
+If you wish to iterate over another field, you can do so by annotating the
+desired field with `@encryption:cursor`:
+
+```graphql
+model User {
+  id     Int     @id @default(autoincrement())
+  email  String  @unique /// @encryption:cursor <- iterate over this field
+}
+```
+
+Cursor fields have to respect the following constraints:
+
+- Be @unique
+- Be of type Int or String
+- Not be encrypted themselves
 
 ## Key Management
 

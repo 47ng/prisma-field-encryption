@@ -61,9 +61,10 @@ describe('dmmf', () => {
         model Post {
           id         Int        @id @default(autoincrement())
           title      String
-          content    String? /// @encrypted
+          content    String?    /// @encrypted
           author     User?      @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
           authorId   Int?
+          cursor     Int        @unique /// @encryption:cursor
           categories Category[]
           havePinned User[]     @relation("pinnedPost")
         }
@@ -85,7 +86,8 @@ describe('dmmf', () => {
         connections: {
           posts: { modelName: 'Post', isList: true },
           pinnedPost: { modelName: 'Post', isList: false }
-        }
+        },
+        cursor: 'id'
       },
       Post: {
         fields: {
@@ -95,13 +97,15 @@ describe('dmmf', () => {
           author: { modelName: 'User', isList: false },
           categories: { modelName: 'Category', isList: true },
           havePinned: { modelName: 'User', isList: true }
-        }
+        },
+        cursor: 'cursor'
       },
       Category: {
         fields: {},
         connections: {
           posts: { modelName: 'Post', isList: true }
-        }
+        },
+        cursor: 'id'
       }
     }
     expect(received).toEqual(expected)

@@ -8,6 +8,13 @@ export interface ConnectionDescriptor {
 }
 
 export interface DMMFModelDescriptor {
+  /**
+   * The field to use to iterate over rows
+   * in encryption/decryption/key rotation migrations.
+   *
+   * See https://github.com/47ng/prisma-field-encryption#migrations
+   */
+  cursor?: string
   fields: Record<string, FieldConfiguration> // key: field name
   connections: Record<string, ConnectionDescriptor> // key: field name
 }
@@ -24,7 +31,14 @@ export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFModels {
   const allModels = dmmf.datamodel.models
 
   return allModels.reduce<DMMFModels>((output, model) => {
+    const idField = model.fields.find(
+      field => field.isId && ['Int', 'String'].includes(String(field.type))
+    )
+    const cursorField = model.fields.find(field =>
+      field.documentation?.includes('@encryption:cursor')
+    )
     const modelDescriptor: DMMFModelDescriptor = {
+      cursor: cursorField?.name ?? idField?.name,
       fields: model.fields.reduce<DMMFModelDescriptor['fields']>(
         (fields, field) => {
           const fieldConfig = parseAnnotation(
@@ -56,6 +70,9 @@ export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFModels {
         },
         {}
       )
+    }
+    if (!modelDescriptor.cursor) {
+      console.warn(warnings.noCursorFound(model.name))
     }
     return {
       ...output,

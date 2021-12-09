@@ -5,6 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
+  "bin": {
+    "prisma-field-encryption": "./dist/generator/main.js"
+  },
   "author": {
     "name": "François Best",
     "email": "contact@francoisbest.com",
@@ -27,6 +30,7 @@
     "clean": "rm -rf ./dist ./coverage",
     "prebuild": "run-s generate:prisma",
     "build": "tsc",
+    "postbuild": "chmod +x ./dist/generator/main.js && cd node_modules/.bin && ln -sf ../../dist/generator/main.js ./prisma-field-encryption",
     "generate": "run-s generate:*",
     "generate:prisma": "prisma generate",
     "generate:dmmf": "ts-node ./src/scripts/generateDMMF.ts",
@@ -38,10 +42,13 @@
     "test:coverage:merge": "nyc merge ./coverage ./coverage/coverage-final.json",
     "test:coverage:report": "nyc report -t ./coverage --r html -r lcov -r clover",
     "ci": "run-s generate build test",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "premigrate": "run-s build generate",
+    "migrate": "ts-node ./src/tests/migrate.ts"
   },
   "dependencies": {
     "@47ng/cloak": "^1.1.0-beta.2",
+    "@prisma/generator-helper": "^3.6.0",
     "object-path": "^0.11.8"
   },
   "peerDependencies": {

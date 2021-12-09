@@ -1,4 +1,4 @@
-import { Prisma } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 const header = '[prisma-field-encryption]'
 
@@ -34,7 +34,20 @@ export const errors = {
 
   decryptionErrorReport: (operation: string, errors: string[]) =>
     prefixError(`decryption error(s) encountered in operation ${operation}:
-  ${errors.join('\n  ')}`)
+  ${errors.join('\n  ')}`),
+
+  // Generator errors
+  noInteractiveTransactions: prefixError(
+    `this generator requires enabling the \`interactiveTransactions\` preview feature on \`prisma-client-js\`:
+
+  generator client {
+    provider        = "prisma-client-js"
+    previewFeatures = ["interactiveTransactions"] // <- Add this line
+  }
+
+  Read more: https://github.com/47ng/prisma-field-encryption#migrations
+`
+  )
 }
 
 export const warnings = {
@@ -44,6 +57,10 @@ export const warnings = {
       `the field ${model}.${field} defines both 'strict' and 'readonly'.
 Strict decryption is disabled in read-only mode (to handle new unencrypted data).`
     ),
+  noCursorFound: (model: string) =>
+    prefixWarning(`could not find a field to use to iterate over rows in model ${model}.
+  Automatic encryption/decryption/key rotation migrations are disabled for this model.
+  Read more: https://github.com/47ng/prisma-field-encryption#migrations`),
 
   // Runtime warnings
   whereClause: (operation: string, path: string) =>

@@ -4,8 +4,14 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["interactiveTransactions"]
 }
+
+// generator fieldEncryptionMigrations {
+//   provider = "prisma-field-encryption"
+//   output   = "../src/tests/migrations"
+// }
 
 model User {
   id           Int     @id @default(autoincrement())
