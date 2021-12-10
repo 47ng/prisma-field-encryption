@@ -31,7 +31,7 @@ generatorHandler({
 
     // mkdir -p
     try {
-      fs.mkdir(outputDir, { recursive: true })
+      await fs.mkdir(outputDir, { recursive: true })
     } catch {}
 
     // Keep only models with encrypted fields & a valid cursor
