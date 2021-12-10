@@ -54,15 +54,40 @@ export const defaultProgressReport: ProgressReportCallback = ({
 
 // --
 
+export type MigrationReport = {
+${Object.keys(models)
+  .map(modelName => `  ${modelName}: number`)
+  .join(',\n')}
+}
+
+/**
+ * Migrate models concurrently.
+ *
+ * Processed models:
+${Object.keys(models)
+  .map(modelName => ` * - ${modelName}`)
+  .join('\n')}
+ *
+ * @returns a dictionary of the number of processed records per model.
+ */
 export async function migrate(
   client: PrismaClient,
   reportProgress: ProgressReportCallback = defaultProgressReport
-) {
-  await Promise.all([
+): Promise<MigrationReport> {
+  const [
+${Object.keys(models)
+  .map(modelName => `    processed${modelName}`)
+  .join(',\n')}
+  ] = await Promise.all([
 ${Object.keys(models)
   .map(modelName => `    migrate${modelName}(client, reportProgress)`)
   .join(',\n')}
   ])
+  return {
+${Object.keys(models)
+  .map(modelName => `    ${modelName}: processed${modelName}`)
+  .join(',\n')}
+  }
 }
 `
   const outputPath = path.join(outputDir, 'index.ts')
