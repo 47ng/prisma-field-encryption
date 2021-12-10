@@ -21,6 +21,8 @@ export interface DMMFModelDescriptor {
 
 export type DMMFModels = Record<string, DMMFModelDescriptor> // key: model name
 
+const supportedCursorTypes = ['Int', 'String']
+
 export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFModels {
   // todo: Make it robust against changes in the DMMF structure
   // (can happen as it's an undocumented API)
@@ -32,11 +34,30 @@ export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFModels {
 
   return allModels.reduce<DMMFModels>((output, model) => {
     const idField = model.fields.find(
-      field => field.isId && ['Int', 'String'].includes(String(field.type))
+      field => field.isId && supportedCursorTypes.includes(String(field.type))
     )
     const cursorField = model.fields.find(field =>
       field.documentation?.includes('@encryption:cursor')
     )
+    if (cursorField) {
+      // Make sure custom cursor field is valid
+      if (!cursorField.isUnique) {
+        throw new Error(errors.nonUniqueCursor(model.name, cursorField.name))
+      }
+      if (!supportedCursorTypes.includes(String(cursorField.type))) {
+        throw new Error(
+          errors.unsupportedCursorType(
+            model.name,
+            cursorField.name,
+            String(cursorField.type)
+          )
+        )
+      }
+      if (cursorField.documentation?.includes('@encrypted')) {
+        throw new Error(errors.encryptedCursor(model.name, cursorField.name))
+      }
+    }
+
     const modelDescriptor: DMMFModelDescriptor = {
       cursor: cursorField?.name ?? idField?.name,
       fields: model.fields.reduce<DMMFModelDescriptor['fields']>(

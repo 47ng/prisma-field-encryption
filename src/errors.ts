@@ -37,6 +37,16 @@ export const errors = {
   ${errors.join('\n  ')}`),
 
   // Generator errors
+  nonUniqueCursor: (model: string, field: string) =>
+    prefixError(`the cursor field ${model}.${field} should have a @unique attribute.
+  Read more: https://github.com/47ng/prisma-field-encryption#custom-cursors`),
+  unsupportedCursorType: (model: string, field: string, type: string) =>
+    prefixError(`the cursor field ${model}.${field} has an unsupported type ${type}.
+  Only String and Int cursors are supported.
+  Read more: https://github.com/47ng/prisma-field-encryption#custom-cursors`),
+  encryptedCursor: (model: string, field: string) =>
+    prefixError(`the field ${model}.${field} cannot be used as a cursor as it is encrypted.
+  Read more: https://github.com/47ng/prisma-field-encryption#custom-cursors`),
   noInteractiveTransactions: prefixError(
     `this generator requires enabling the \`interactiveTransactions\` preview feature on \`prisma-client-js\`:
 
