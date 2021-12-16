@@ -36,6 +36,10 @@ export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFModels {
     const idField = model.fields.find(
       field => field.isId && supportedCursorTypes.includes(String(field.type))
     )
+    const uniqueField = model.fields.find(
+      field =>
+        field.isUnique && supportedCursorTypes.includes(String(field.type))
+    )
     const cursorField = model.fields.find(field =>
       field.documentation?.includes('@encryption:cursor')
     )
@@ -59,7 +63,7 @@ export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFModels {
     }
 
     const modelDescriptor: DMMFModelDescriptor = {
-      cursor: cursorField?.name ?? idField?.name,
+      cursor: cursorField?.name ?? idField?.name ?? uniqueField?.name,
       fields: model.fields.reduce<DMMFModelDescriptor['fields']>(
         (fields, field) => {
           const fieldConfig = parseAnnotation(

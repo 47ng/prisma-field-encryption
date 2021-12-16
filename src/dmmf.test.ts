@@ -75,6 +75,12 @@ describe('dmmf', () => {
           name  String
           posts Post[]
         }
+
+        // Cursor fallback on unique fields
+        model Unique {
+          id     Json   @id // invalid type for iteration
+          unique String @unique
+        }
       `
     })
     const received = analyseDMMF(dmmf)
@@ -106,6 +112,11 @@ describe('dmmf', () => {
           posts: { modelName: 'Post', isList: true }
         },
         cursor: 'id'
+      },
+      Unique: {
+        fields: {},
+        connections: {},
+        cursor: 'unique'
       }
     }
     expect(received).toEqual(expected)

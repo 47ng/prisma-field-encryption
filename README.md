@@ -79,7 +79,7 @@ _Tip: a key provided in code will take precedence over a key from the environmen
 
 In your Prisma schema, add `/// @encrypted` to the fields you want to encrypt:
 
-```graphql
+```prisma
 model Post {
   id        Int     @id @default(autoincrement())
   title     String
@@ -172,24 +172,38 @@ totalCount.
 
 ### Custom Cursors
 
-By default, records will be iterated upon by increasing order of a model's `@id`
-field. Only Int or String IDs are supported.
+Records will be iterated upon by increasing order of a **cursor** field.
+
+A cursor field has to respect the following constraints:
+
+- Be `@unique`
+- Not be encrypted itself
+
+By default, records will try to use the `@id` field.
+
+> Note: Compound `@@id` primary keys are not supported.
+
+If the `@id` field does not satisfy cursor constraints, the generator will
+fallback to the first field that satisfies those constraints.
 
 If you wish to iterate over another field, you can do so by annotating the
 desired field with `@encryption:cursor`:
 
 ```prisma
 model User {
-  id     Int     @id @default(autoincrement())
-  email  String  @unique /// @encryption:cursor <- iterate over this field
+  id     Int    @id       // Generator would use this by default
+  email  String @unique  /// @encryption:cursor <- iterate over this field instead
 }
 ```
 
-A cursor field has to respect the following constraints:
+Migrations will look for cursor fields in your models in this order:
 
-- Be `@unique`
-- Be of type Int or String
-- Not be encrypted itself
+1. Fields explictly annotated with `@encryption:cursor`
+2. The `@id` field
+3. The first `@unique` field
+
+If no cursor is found for a model with encrypted fields, the generator will
+throw an error when running `prisma generate`.
 
 ## Key Management
 
@@ -227,13 +241,13 @@ prismaClient.$use(
 _Tip: the current encryption key is already part of the decryption keys, no need to add it there._
 
 Key rotation on existing fields (decrypt with old key and re-encrypt with the
-new one) should be done in a migration.
+new one) is done by [data migrations](#migrations).
 
 **Roadmap:**
 
 - [x] Provide multiple decryption keys
+- [x] Add facilities for migrations & key rotation
 - [ ] Add compatibility with [@47ng/cloak](https://github.com/47ng/cloak) keychain environments
-- [ ] Add facilities for migrations & key rotation
 
 ## Caveats & Limitations
 
@@ -270,6 +284,18 @@ database.
 Data returned from the database is scanned for encrypted fields, and those are
 attempted to be decrypted. Errors will be logged and any unencrypted data will
 be passed through, allowing seamless setup.
+
+The generated data migrations files iterate over models that contain encrypted
+fields, record by record, using the `interactiveTransaction` preview feature to
+ensure that a record is not overwritten by other concurrent updates.
+
+Because of the transparent encryption provided by the middleware, iterating over
+records looks like a no-op (reading then updating with the same data), but this
+will take care of:
+
+- Encrypting fields newly `/// @encrypted`
+- Rotating the encryption key when it changed
+- Decrypting fields where encryption is being disabled with `/// @encrypted?readonly`. Once that migration has run, you can remove the annotation on those fields.
 
 ## Do I Need This ?
 
