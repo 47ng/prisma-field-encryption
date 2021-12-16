@@ -54,6 +54,8 @@ Generate an encryption key:
 $ cloak generate
 ```
 
+> _Note: the `cloak` CLI comes pre-installed with `prisma-field-encryption` as part of the [`@47ng/cloak`](https://github.com/47ng/cloak) dependency._
+
 The preferred method to provide your key is via the `PRISMA_FIELD_ENCRYPTION_KEY`
 environment variable:
 
