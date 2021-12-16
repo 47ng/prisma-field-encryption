@@ -103,7 +103,7 @@ _Tip: make sure you use a triple-slash. Double slash comments won't work._
 
 Make sure you have a generator for the Prisma client:
 
-```graphql
+```prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -126,7 +126,7 @@ your existing data will remain in clear text.
 Encrypting existing data should be done in a migration. The package comes with
 a built-in automatic migration generator, in the form of a Prisma generator:
 
-```graphql
+```prisma
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["interactiveTransactions"]
@@ -178,7 +178,7 @@ field. Only Int or String IDs are supported.
 If you wish to iterate over another field, you can do so by annotating the
 desired field with `@encryption:cursor`:
 
-```graphql
+```prisma
 model User {
   id     Int     @id @default(autoincrement())
   email  String  @unique /// @encryption:cursor <- iterate over this field
