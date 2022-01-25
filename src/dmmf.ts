@@ -96,7 +96,10 @@ export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFModels {
         {}
       )
     }
-    if (!modelDescriptor.cursor) {
+    if (
+      Object.keys(modelDescriptor.fields).length > 0 &&
+      !modelDescriptor.cursor
+    ) {
       console.warn(warnings.noCursorFound(model.name))
     }
     return {
