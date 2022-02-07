@@ -315,11 +315,11 @@ Cipher used: AES-GCM with 256 bit keys.
 
 ## Obligatory Disclaimer About Passwords
 
-🚨 **DO NOT USE THIS TO ENCRYPT PASSWORDS** 🚨
+🚨 **DO NOT USE THIS TO ENCRYPT PASSWORDS WITHOUT ADDITIONAL SECURITY MEASURES** 🚨
 
-Passwords should be hashed & salted using a slow, constant-time one-way function.
+Passwords should be hashed & salted using a slow, constant-time one-way function. However, this library could be used to encrypt the salted and hashed password as a [pepper](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#peppering) to provide an additional layer of security. It is recommended that the encryption key be stored in a [Hardware Security Module](https://en.wikipedia.org/wiki/Hardware_security_module) on the server.
 
-Don't reinvent the wheel: use Argon2id if you can, otherwise scrypt.
+For hashing passwords, don't reinvent the wheel: use Argon2id if you can, otherwise scrypt.
 
 ## License
 
