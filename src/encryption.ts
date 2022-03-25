@@ -108,6 +108,16 @@ export function decryptOnRead(
   models: DMMFModels,
   operation: string
 ) {
+  // Analyse the query to see if there's anything to decrypt.
+  const model = models[params.model!]
+  if (Object.keys(model.fields).length === 0 && !params.args.include) {
+    // The queried model doesn't have any encrypted field,
+    // and there are no included connections.
+    // We can safely skip decryption for the returned data.
+    // todo: Walk the include/select tree for a better decision.
+    return
+  }
+
   const decryptionErrors: string[] = []
   const fatalDecryptionErrors: string[] = []
 
