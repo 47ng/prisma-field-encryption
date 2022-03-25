@@ -10,10 +10,10 @@ export function fieldEncryptionMiddleware(
   const keys = configureKeys(config)
   const models = analyseDMMF()
 
-  return async (
+  return async function fieldEncryptionMiddleware(
     params: MiddlewareParams,
     next: (params: MiddlewareParams) => Promise<any>
-  ) => {
+  ) {
     if (!params.model) {
       // Unsupported operation
       return await next(params)
