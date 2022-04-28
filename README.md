@@ -25,6 +25,8 @@ $ yarn add prisma-field-encryption
 $ npm i prisma-field-encryption
 ```
 
+> _Note: this requires Prisma 3.8.0 or higher._
+
 ## Usage
 
 ### 1. Add the middleware to your Prisma client
