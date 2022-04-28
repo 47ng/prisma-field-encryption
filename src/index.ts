@@ -21,9 +21,9 @@ export function fieldEncryptionMiddleware(
     const operation = `${params.model}.${params.action}`
     // Params are mutated in-place for modifications to occur.
     // See https://github.com/prisma/prisma/issues/9522
-    encryptOnWrite(params, keys, models, operation)
-    let result = await next(params)
-    decryptOnRead(params, result, keys, models, operation)
+    const encryptedParams = encryptOnWrite(params, keys, models, operation)
+    let result = await next(encryptedParams)
+    decryptOnRead(encryptedParams, result, keys, models, operation)
     return result
   }
 }

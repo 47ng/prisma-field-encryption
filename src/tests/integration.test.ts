@@ -125,4 +125,19 @@ describe('integration', () => {
     expect(post2.content).toMatch(cloakedStringRegex)
     expect(category.name).toEqual('Quotes')
   })
+
+  test('immutable params', async () => {
+    const email = 'xenia@cccp.ru'
+    const params = {
+      data: {
+        name: 'Xenia Onatop',
+        email
+      }
+    }
+    const received = await client.user.create(params)
+    const user = await sqlite.get({ table: 'User', where: { email } })
+    expect(params.data.name).toEqual('Xenia Onatop')
+    expect(received.name).toEqual('Xenia Onatop')
+    expect(user.name).toMatch(cloakedStringRegex)
+  })
 })

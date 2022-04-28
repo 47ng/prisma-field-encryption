@@ -48,30 +48,31 @@
   },
   "dependencies": {
     "@47ng/cloak": "^1.1.0-beta.2",
-    "@prisma/generator-helper": "^3.6.0",
+    "@prisma/generator-helper": "^3.13.0",
+    "immer": "^9.0.12",
     "object-path": "^0.11.8"
   },
   "peerDependencies": {
-    "@prisma/client": "^3.5.0"
+    "@prisma/client": "^3.8.0"
   },
   "devDependencies": {
-    "@commitlint/config-conventional": "^15.0.0",
-    "@prisma/client": "^3.5.0",
-    "@prisma/sdk": "^3.5.0",
-    "@types/jest": "^27.0.3",
-    "@types/node": "^16.11.10",
+    "@commitlint/config-conventional": "^16.2.4",
+    "@prisma/client": "^3.13.0",
+    "@prisma/sdk": "^3.13.0",
+    "@types/jest": "^27.4.1",
+    "@types/node": "^17.0.29",
     "@types/object-path": "^0.11.1",
-    "commitlint": "^15.0.0",
+    "commitlint": "^16.2.4",
     "husky": "^7.0.4",
-    "jest": "^27.3.1",
+    "jest": "^27",
     "npm-run-all": "^4.1.5",
     "nyc": "^15.1.0",
-    "prisma": "^3.5.0",
-    "sqlite": "^4.0.23",
-    "sqlite3": "^5.0.2",
-    "ts-jest": "^27.0.7",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.2"
+    "prisma": "^3.13.0",
+    "sqlite": "^4.1.1",
+    "sqlite3": "^5.0.6",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
   },
   "jest": {
     "verbose": true,

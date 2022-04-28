@@ -8,6 +8,7 @@ import {
   ParsedCloakKey,
   parseKeySync
 } from '@47ng/cloak'
+import produce, { Draft } from 'immer'
 import objectPath from 'object-path'
 import type { DMMFModels } from './dmmf'
 import { errors, warnings } from './errors'
@@ -65,40 +66,43 @@ export function encryptOnWrite(
   operation: string
 ) {
   if (!writeOperations.includes(params.action)) {
-    return // No input data to encrypt
+    return params // No input data to encrypt
   }
 
   const encryptionErrors: string[] = []
 
-  visitInputTargetFields(
-    params,
-    models,
-    function encryptFieldValue({
-      fieldConfig,
-      value: clearText,
-      path,
-      model,
-      field
-    }) {
-      if (!fieldConfig.encrypt) {
-        return
+  const mutatedParams = produce(params, (draft: Draft<MiddlewareParams>) => {
+    visitInputTargetFields(
+      draft,
+      models,
+      function encryptFieldValue({
+        fieldConfig,
+        value: clearText,
+        path,
+        model,
+        field
+      }) {
+        if (!fieldConfig.encrypt) {
+          return
+        }
+        if (whereClauseRegExp.test(path)) {
+          console.warn(warnings.whereClause(operation, path))
+        }
+        try {
+          const cipherText = encryptStringSync(clearText, keys.encryptionKey)
+          objectPath.set(draft.args, path, cipherText)
+        } catch (error) {
+          encryptionErrors.push(
+            errors.fieldEncryptionError(model, field, path, error)
+          )
+        }
       }
-      if (whereClauseRegExp.test(path)) {
-        console.warn(warnings.whereClause(operation, path))
-      }
-      try {
-        const cipherText = encryptStringSync(clearText, keys.encryptionKey)
-        objectPath.set(params.args, path, cipherText)
-      } catch (error) {
-        encryptionErrors.push(
-          errors.fieldEncryptionError(model, field, path, error)
-        )
-      }
-    }
-  )
+    )
+  })
   if (encryptionErrors.length > 0) {
     throw new Error(errors.encryptionErrorReport(operation, encryptionErrors))
   }
+  return mutatedParams
 }
 
 export function decryptOnRead(
