@@ -2,17 +2,20 @@ import { analyseDMMF } from './dmmf'
 import { configureKeys, decryptOnRead, encryptOnWrite } from './encryption'
 import type { Configuration, Middleware, MiddlewareParams } from './types'
 
-export function fieldEncryptionMiddleware(
-  config: Configuration = {}
-): Middleware {
+export function fieldEncryptionMiddleware<
+  Models extends string = any,
+  Actions extends string = any
+>(config: Configuration = {}): Middleware<Models, Actions> {
   // This will throw if the encryption key is missing
   // or if anything is invalid.
   const keys = configureKeys(config)
-  const models = analyseDMMF()
+  const models = analyseDMMF(
+    config.dmmf ?? require('@prisma/client').Prisma.dmmf
+  )
 
   return async function fieldEncryptionMiddleware(
-    params: MiddlewareParams,
-    next: (params: MiddlewareParams) => Promise<any>
+    params: MiddlewareParams<Models, Actions>,
+    next: (params: MiddlewareParams<Models, Actions>) => Promise<any>
   ) {
     if (!params.model) {
       // Unsupported operation

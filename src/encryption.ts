@@ -59,8 +59,8 @@ const writeOperations = [
 
 const whereClauseRegExp = /\.where\./
 
-export function encryptOnWrite(
-  params: MiddlewareParams,
+export function encryptOnWrite<Models extends string, Actions extends string>(
+  params: MiddlewareParams<Models, Actions>,
   keys: KeysConfiguration,
   models: DMMFModels,
   operation: string
@@ -71,42 +71,45 @@ export function encryptOnWrite(
 
   const encryptionErrors: string[] = []
 
-  const mutatedParams = produce(params, (draft: Draft<MiddlewareParams>) => {
-    visitInputTargetFields(
-      draft,
-      models,
-      function encryptFieldValue({
-        fieldConfig,
-        value: clearText,
-        path,
-        model,
-        field
-      }) {
-        if (!fieldConfig.encrypt) {
-          return
+  const mutatedParams = produce(
+    params,
+    (draft: Draft<MiddlewareParams<Models, Actions>>) => {
+      visitInputTargetFields(
+        draft,
+        models,
+        function encryptFieldValue({
+          fieldConfig,
+          value: clearText,
+          path,
+          model,
+          field
+        }) {
+          if (!fieldConfig.encrypt) {
+            return
+          }
+          if (whereClauseRegExp.test(path)) {
+            console.warn(warnings.whereClause(operation, path))
+          }
+          try {
+            const cipherText = encryptStringSync(clearText, keys.encryptionKey)
+            objectPath.set(draft.args, path, cipherText)
+          } catch (error) {
+            encryptionErrors.push(
+              errors.fieldEncryptionError(model, field, path, error)
+            )
+          }
         }
-        if (whereClauseRegExp.test(path)) {
-          console.warn(warnings.whereClause(operation, path))
-        }
-        try {
-          const cipherText = encryptStringSync(clearText, keys.encryptionKey)
-          objectPath.set(draft.args, path, cipherText)
-        } catch (error) {
-          encryptionErrors.push(
-            errors.fieldEncryptionError(model, field, path, error)
-          )
-        }
-      }
-    )
-  })
+      )
+    }
+  )
   if (encryptionErrors.length > 0) {
     throw new Error(errors.encryptionErrorReport(operation, encryptionErrors))
   }
   return mutatedParams
 }
 
-export function decryptOnRead(
-  params: MiddlewareParams,
+export function decryptOnRead<Models extends string, Actions extends string>(
+  params: MiddlewareParams<Models, Actions>,
   result: any,
   keys: KeysConfiguration,
   models: DMMFModels,

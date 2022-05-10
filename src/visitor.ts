@@ -60,8 +60,11 @@ const makeVisitor = (models: DMMFModels, visitor: TargetFieldVisitorFn) =>
     return state
   }
 
-export function visitInputTargetFields(
-  params: MiddlewareParams,
+export function visitInputTargetFields<
+  Models extends string,
+  Actions extends string
+>(
+  params: MiddlewareParams<Models, Actions>,
   models: DMMFModels,
   visitor: TargetFieldVisitorFn
 ) {
@@ -70,8 +73,11 @@ export function visitInputTargetFields(
   })
 }
 
-export function visitOutputTargetFields(
-  params: MiddlewareParams,
+export function visitOutputTargetFields<
+  Models extends string,
+  Actions extends string
+>(
+  params: MiddlewareParams<Models, Actions>,
   result: any,
   models: DMMFModels,
   visitor: TargetFieldVisitorFn

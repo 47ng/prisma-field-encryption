@@ -33,7 +33,6 @@
     "postbuild": "chmod +x ./dist/generator/main.js && cd node_modules/.bin && ln -sf ../../dist/generator/main.js ./prisma-field-encryption",
     "generate": "run-s generate:*",
     "generate:prisma": "prisma generate",
-    "generate:dmmf": "ts-node ./src/scripts/generateDMMF.ts",
     "test": "run-s test:**",
     "test:types": "tsc --noEmit",
     "test:unit": "jest --config jest.config.unit.json",
@@ -41,7 +40,7 @@
     "test:integration": "jest --config jest.config.integration.json --runInBand",
     "test:coverage:merge": "nyc merge ./coverage ./coverage/coverage-final.json",
     "test:coverage:report": "nyc report -t ./coverage --r html -r lcov -r clover",
-    "ci": "run-s generate build test",
+    "ci": "run-s build test",
     "prepare": "husky install",
     "premigrate": "run-s build generate",
     "migrate": "ts-node ./src/tests/migrate.ts"
@@ -50,14 +49,15 @@
     "@47ng/cloak": "^1.1.0-beta.2",
     "@prisma/generator-helper": "^3.13.0",
     "immer": "^9.0.12",
-    "object-path": "^0.11.8"
+    "object-path": "^0.11.8",
+    "zod": "^3.15.1"
   },
   "peerDependencies": {
     "@prisma/client": "^3.8.0"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^16.2.4",
-    "@prisma/client": "^3.13.0",
+    "@prisma/client": "3.13.0",
     "@prisma/sdk": "^3.13.0",
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.29",

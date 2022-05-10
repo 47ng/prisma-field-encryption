@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client'
 import { fieldEncryptionMiddleware } from '../index'
+import { Prisma, PrismaClient } from './.generated/client'
 
 export const TEST_ENCRYPTION_KEY =
   'k1.aesgcm256.OsqVmAOZBB_WW3073q1wU4ag0ap0ETYAYMh041RuxuI='
@@ -33,7 +33,8 @@ client.$use(async (params, next) => {
 
 client.$use(
   fieldEncryptionMiddleware({
-    encryptionKey: TEST_ENCRYPTION_KEY
+    encryptionKey: TEST_ENCRYPTION_KEY,
+    dmmf: Prisma.dmmf
   })
 )
 

@@ -1,6 +1,5 @@
-import { Prisma } from '@prisma/client'
 import { errors, warnings } from './errors'
-import type { DMMF, FieldConfiguration } from './types'
+import { DMMFDocument, dmmfDocumentParser, FieldConfiguration } from './types'
 
 export interface ConnectionDescriptor {
   modelName: string
@@ -23,13 +22,8 @@ export type DMMFModels = Record<string, DMMFModelDescriptor> // key: model name
 
 const supportedCursorTypes = ['Int', 'String']
 
-export function analyseDMMF(dmmf: DMMF = Prisma.dmmf): DMMFModels {
-  // todo: Make it robust against changes in the DMMF structure
-  // (can happen as it's an undocumented API)
-  // - Prisma.dmmf does not exist
-  // - Models are not located there, or empty -> warning
-  // - Model objects don't conform to what we need (parse with zod)
-
+export function analyseDMMF(input: DMMFDocument): DMMFModels {
+  const dmmf = dmmfDocumentParser.parse(input)
   const allModels = dmmf.datamodel.models
 
   return allModels.reduce<DMMFModels>((output, model) => {

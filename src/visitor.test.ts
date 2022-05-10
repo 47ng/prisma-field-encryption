@@ -36,7 +36,7 @@ describe('visitor', () => {
 
   test('visitInputTargetFields - simple example', async () => {
     const models = analyseDMMF(await dmmf)
-    const params: MiddlewareParams = {
+    const params: MiddlewareParams<any, any> = {
       action: 'create',
       model: 'User',
       args: {
@@ -63,7 +63,7 @@ describe('visitor', () => {
 
   test('visitInputTargetFields - nested create', async () => {
     const models = analyseDMMF(await dmmf)
-    const params: MiddlewareParams = {
+    const params: MiddlewareParams<any, any> = {
       action: 'create',
       model: 'User',
       args: {

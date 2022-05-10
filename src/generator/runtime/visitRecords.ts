@@ -1,26 +1,25 @@
-import type { PrismaClient } from '@prisma/client'
 import { defaultProgressReport, ProgressReportCallback } from './progressReport'
 
-export type RecordVisitor<Cursor> = (
+export type RecordVisitor<PrismaClient, Cursor> = (
   client: PrismaClient,
   cursor: Cursor | undefined
 ) => Promise<Cursor | undefined>
 
-export interface VisitRecordsArgs<Cursor> {
+export interface VisitRecordsArgs<PrismaClient, Cursor> {
   modelName: string
   client: PrismaClient
   getTotalCount: () => Promise<number>
-  migrateRecord: RecordVisitor<Cursor>
+  migrateRecord: RecordVisitor<PrismaClient, Cursor>
   reportProgress?: ProgressReportCallback
 }
 
-export async function visitRecords<Cursor>({
+export async function visitRecords<PrismaClient, Cursor>({
   modelName,
   client,
   getTotalCount,
   migrateRecord,
   reportProgress = defaultProgressReport
-}: VisitRecordsArgs<Cursor>) {
+}: VisitRecordsArgs<PrismaClient, Cursor>) {
   const totalCount = await getTotalCount()
   if (totalCount === 0) {
     return 0
