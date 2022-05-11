@@ -36,7 +36,7 @@ const dmmfFieldParser = z.object({
   isList: z.boolean(),
   isUnique: z.boolean(),
   isId: z.boolean(),
-  type: z.string(),
+  type: z.any(),
   documentation: z.string().optional()
 })
 
