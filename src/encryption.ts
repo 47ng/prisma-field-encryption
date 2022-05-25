@@ -12,7 +12,12 @@ import produce, { Draft } from 'immer'
 import objectPath from 'object-path'
 import type { DMMFModels } from './dmmf'
 import { errors, warnings } from './errors'
-import type { Configuration, MiddlewareParams } from './types'
+import type {
+  Configuration,
+  MiddlewareParams,
+  EncryptionFunction,
+  DecryptionFunction
+} from './types'
 import { visitInputTargetFields, visitOutputTargetFields } from './visitor'
 
 export interface KeysConfiguration {
@@ -63,7 +68,8 @@ export function encryptOnWrite(
   params: MiddlewareParams,
   keys: KeysConfiguration,
   models: DMMFModels,
-  operation: string
+  operation: string,
+  cb?: EncryptionFunction
 ) {
   if (!writeOperations.includes(params.action)) {
     return params // No input data to encrypt
@@ -89,7 +95,11 @@ export function encryptOnWrite(
           console.warn(warnings.whereClause(operation, path))
         }
         try {
-          const cipherText = encryptStringSync(clearText, keys.encryptionKey)
+          const cipherText =
+            cb !== undefined
+              ? cb(clearText)
+              : encryptStringSync(clearText, keys.encryptionKey)
+
           objectPath.set(draft.args, path, cipherText)
         } catch (error) {
           encryptionErrors.push(
@@ -110,7 +120,8 @@ export function decryptOnRead(
   result: any,
   keys: KeysConfiguration,
   models: DMMFModels,
-  operation: string
+  operation: string,
+  cb?: DecryptionFunction
 ) {
   // Analyse the query to see if there's anything to decrypt.
   const model = models[params.model!]
@@ -141,7 +152,11 @@ export function decryptOnRead(
           return
         }
         const decryptionKey = findKeyForMessage(cipherText, keys.keychain)
-        const clearText = decryptStringSync(cipherText, decryptionKey)
+        const clearText =
+          cb !== undefined
+            ? cb(cipherText)
+            : decryptStringSync(cipherText, decryptionKey)
+
         objectPath.set(result, path, clearText)
       } catch (error) {
         const message = errors.fieldDecryptionError(model, field, path, error)

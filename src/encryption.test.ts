@@ -1,8 +1,30 @@
 import { formatKey } from '@47ng/cloak/dist/key'
-import { configureKeys } from './encryption'
+import { DMMFModels } from 'dmmf'
+import { MiddlewareParams } from 'types'
+import { configureKeys, encryptOnWrite, KeysConfiguration } from './encryption'
 import { errors } from './errors'
 
 const TEST_KEY = 'k1.aesgcm256.DbQoar8ZLuUsOHZNyrnjlskInHDYlzF3q6y1KGM7DUM='
+
+const encryptFunction = jest.fn(
+  (decripted: string) => `fake-encription-${decripted}`
+)
+const decryptFunction = jest.fn(
+  (encripted: string) => `fake-decription-${encripted}`
+)
+const fakeKeys: KeysConfiguration = {
+  encryptionKey: 'fake-encryptionKey',
+  keychain: 'fake-keychain'
+} as any
+const fakeParams: MiddlewareParams = {
+  action: 'create',
+  args: { data: { any: 'field' } },
+  dataPath: ['any'],
+  runInTransaction: true,
+  model: 'User'
+}
+const fakeModels: DMMFModels = { User: null } as any
+const fakeOperation = 'User.create'
 
 describe('encryption', () => {
   describe('configureKeys', () => {
@@ -54,6 +76,20 @@ describe('encryption', () => {
       })
       expect(Object.values(keychain).length).toEqual(3)
       process.env.PRISMA_FIELD_DECRYPTION_KEYS = undefined
+    })
+  })
+
+  describe('encryptOnWrite', () => {
+    test('Should call custom encrypt function', () => {
+      encryptOnWrite(
+        fakeParams,
+        fakeKeys,
+        fakeModels,
+        fakeOperation,
+        encryptFunction
+      )
+
+      expect(encryptFunction).toBeCalledTimes(1)
     })
   })
 })

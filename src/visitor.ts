@@ -16,7 +16,10 @@ export interface TargetField {
 
 export type TargetFieldVisitorFn = (targetField: TargetField) => void
 
-const makeVisitor = (models: DMMFModels, visitor: TargetFieldVisitorFn) =>
+export const makeVisitor = (
+  models: DMMFModels,
+  visitor: TargetFieldVisitorFn
+) =>
   function visitNode(state: VisitorState, { key, type, node, path }: Item) {
     const model = models[state.currentModel]
     if (!model || !key) {
