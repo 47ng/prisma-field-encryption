@@ -15,8 +15,8 @@ import { errors, warnings } from './errors'
 import type {
   Configuration,
   MiddlewareParams,
-  EncryptionFunction,
-  DecryptionFunction
+  EncryptionFn,
+  DecryptionFn
 } from './types'
 import { visitInputTargetFields, visitOutputTargetFields } from './visitor'
 
@@ -69,7 +69,7 @@ export function encryptOnWrite(
   keys: KeysConfiguration,
   models: DMMFModels,
   operation: string,
-  cb?: EncryptionFunction
+  encryptFn?: EncryptionFn
 ) {
   if (!writeOperations.includes(params.action)) {
     return params // No input data to encrypt
@@ -96,8 +96,8 @@ export function encryptOnWrite(
         }
         try {
           const cipherText =
-            cb !== undefined
-              ? cb(clearText)
+            encryptFn !== undefined
+              ? encryptFn(clearText)
               : encryptStringSync(clearText, keys.encryptionKey)
 
           objectPath.set(draft.args, path, cipherText)
@@ -121,7 +121,7 @@ export function decryptOnRead(
   keys: KeysConfiguration,
   models: DMMFModels,
   operation: string,
-  cb?: DecryptionFunction
+  decryptFn?: DecryptionFn
 ) {
   // Analyse the query to see if there's anything to decrypt.
   const model = models[params.model!]
@@ -153,8 +153,8 @@ export function decryptOnRead(
         }
         const decryptionKey = findKeyForMessage(cipherText, keys.keychain)
         const clearText =
-          cb !== undefined
-            ? cb(cipherText)
+          decryptFn !== undefined
+            ? decryptFn(cipherText)
             : decryptStringSync(cipherText, decryptionKey)
 
         objectPath.set(result, path, clearText)
