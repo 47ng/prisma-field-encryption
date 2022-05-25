@@ -110,7 +110,7 @@ describe('encryption', () => {
   describe('decryptOnRead', () => {
     test('Should call custom decryp function', async () => {
       const decryptFunction = jest.fn(
-        (encrypted: string) => `fake-encription-${encrypted}`
+        (encrypted: string) => `fake-decription-${encrypted}`
       )
 
       const params: MiddlewareParams = {
