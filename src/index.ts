@@ -1,5 +1,10 @@
 import { analyseDMMF } from './dmmf'
-import { configureKeys, decryptOnRead, encryptOnWrite } from './encryption'
+import {
+  configureKeys,
+  decryptOnRead,
+  encryptOnWrite,
+  ConfigureKeysParams
+} from './encryption'
 import type { Configuration, Middleware, MiddlewareParams } from './types'
 
 export function fieldEncryptionMiddleware(
@@ -7,7 +12,12 @@ export function fieldEncryptionMiddleware(
 ): Middleware {
   // This will throw if the encryption key is missing
   // or if anything is invalid.
-  const keys = configureKeys(config)
+  const configureKeysParams: ConfigureKeysParams = {
+    encryptionKey: config.encryptionKey,
+    decryptionKeys: config.decryptionKeys
+  }
+
+  const keys = configureKeys(configureKeysParams)
   const models = analyseDMMF()
 
   return async function fieldEncryptionMiddleware(
