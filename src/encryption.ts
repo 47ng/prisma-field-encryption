@@ -12,12 +12,7 @@ import produce, { Draft } from 'immer'
 import objectPath from 'object-path'
 import type { DMMFModels } from './dmmf'
 import { errors, warnings } from './errors'
-import type {
-  Configuration,
-  MiddlewareParams,
-  EncryptionFn,
-  DecryptionFn
-} from './types'
+import type { MiddlewareParams, EncryptionFn, DecryptionFn } from './types'
 import { visitInputTargetFields, visitOutputTargetFields } from './visitor'
 
 export interface KeysConfiguration {
@@ -25,7 +20,12 @@ export interface KeysConfiguration {
   keychain: CloakKeychain
 }
 
-export function configureKeys(config: Configuration): KeysConfiguration {
+export interface ConfigureKeysParams {
+  encryptionKey?: string
+  decryptionKeys?: string[]
+}
+
+export function configureKeys(config: ConfigureKeysParams): KeysConfiguration {
   const encryptionKey =
     config.encryptionKey || process.env.PRISMA_FIELD_ENCRYPTION_KEY
 
@@ -148,14 +148,17 @@ export function decryptOnRead(
       field
     }) {
       try {
-        if (!cloakedStringRegex.test(cipherText)) {
+        if (!decryptFn && !cloakedStringRegex.test(cipherText)) {
           return
         }
-        const decryptionKey = findKeyForMessage(cipherText, keys.keychain)
+
         const clearText =
           decryptFn !== undefined
             ? decryptFn(cipherText)
-            : decryptStringSync(cipherText, decryptionKey)
+            : decryptStringSync(
+                cipherText,
+                findKeyForMessage(cipherText, keys.keychain)
+              )
 
         objectPath.set(result, path, clearText)
       } catch (error) {
