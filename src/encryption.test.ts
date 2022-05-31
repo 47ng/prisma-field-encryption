@@ -64,7 +64,7 @@ describe('encryption', () => {
   })
 
   describe('encryptOnWrite', () => {
-    test('Should call custom encrypt function', async () => {
+    test('Should call custom cypher encrypt function', async () => {
       const encryptFunction = jest.fn(
         (decripted: string) => `fake-encription-${decripted}`
       )
@@ -108,7 +108,7 @@ describe('encryption', () => {
   })
 
   describe('decryptOnRead', () => {
-    test('Should call custom decryp function', async () => {
+    test('Should call custom cypher decrypt function', async () => {
       const decryptFunction = jest.fn(
         (encrypted: string) => `fake-decription-${encrypted}`
       )

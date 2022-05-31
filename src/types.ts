@@ -12,11 +12,15 @@ export type EncryptionFn = (value: string) => string
 
 export type DecryptionFn = (value: string) => string
 
+export type CipherFunctions = {
+  encrypt: EncryptionFn
+  decrypt: DecryptionFn
+}
+
 export interface Configuration {
   encryptionKey?: string
   decryptionKeys?: string[]
-  encryptionFn?: EncryptionFn
-  decryptionFn?: DecryptionFn
+  cipher?: CipherFunctions
 }
 
 export interface FieldConfiguration {

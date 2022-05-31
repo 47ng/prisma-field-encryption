@@ -10,13 +10,13 @@ import type { Configuration, Middleware, MiddlewareParams } from './types'
 export function fieldEncryptionMiddleware(
   config: Configuration = {}
 ): Middleware {
-  // This will throw if the encryption key is missing
-  // or if anything is invalid.
   const configureKeysParams: ConfigureKeysParams = {
     encryptionKey: config.encryptionKey,
     decryptionKeys: config.decryptionKeys
   }
 
+  // This will throw if the encryption key is missing
+  // or if anything is invalid.
   const keys = configureKeys(configureKeysParams)
   const models = analyseDMMF()
 
@@ -36,7 +36,7 @@ export function fieldEncryptionMiddleware(
       keys,
       models,
       operation,
-      config.encryptionFn
+      config.cipher?.encrypt
     )
 
     let result = await next(encryptedParams)
@@ -47,7 +47,7 @@ export function fieldEncryptionMiddleware(
       keys,
       models,
       operation,
-      config.decryptionFn
+      config.cipher?.decrypt
     )
 
     return result
