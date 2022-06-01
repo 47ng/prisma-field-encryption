@@ -12,7 +12,7 @@ import produce, { Draft } from 'immer'
 import objectPath from 'object-path'
 import type { DMMFModels } from './dmmf'
 import { errors, warnings } from './errors'
-import type { Configuration, MiddlewareParams } from './types'
+import type { MiddlewareParams, EncryptionFn, DecryptionFn } from './types'
 import { visitInputTargetFields, visitOutputTargetFields } from './visitor'
 
 export interface KeysConfiguration {
@@ -20,7 +20,12 @@ export interface KeysConfiguration {
   keychain: CloakKeychain
 }
 
-export function configureKeys(config: Configuration): KeysConfiguration {
+export interface ConfigureKeysParams {
+  encryptionKey?: string
+  decryptionKeys?: string[]
+}
+
+export function configureKeys(config: ConfigureKeysParams): KeysConfiguration {
   const encryptionKey =
     config.encryptionKey || process.env.PRISMA_FIELD_ENCRYPTION_KEY
 
@@ -63,7 +68,8 @@ export function encryptOnWrite(
   params: MiddlewareParams,
   keys: KeysConfiguration,
   models: DMMFModels,
-  operation: string
+  operation: string,
+  encryptFn?: EncryptionFn
 ) {
   if (!writeOperations.includes(params.action)) {
     return params // No input data to encrypt
@@ -89,7 +95,11 @@ export function encryptOnWrite(
           console.warn(warnings.whereClause(operation, path))
         }
         try {
-          const cipherText = encryptStringSync(clearText, keys.encryptionKey)
+          const cipherText =
+            encryptFn !== undefined
+              ? encryptFn(clearText)
+              : encryptStringSync(clearText, keys.encryptionKey)
+
           objectPath.set(draft.args, path, cipherText)
         } catch (error) {
           encryptionErrors.push(
@@ -110,7 +120,8 @@ export function decryptOnRead(
   result: any,
   keys: KeysConfiguration,
   models: DMMFModels,
-  operation: string
+  operation: string,
+  decryptFn?: DecryptionFn
 ) {
   // Analyse the query to see if there's anything to decrypt.
   const model = models[params.model!]
@@ -137,11 +148,18 @@ export function decryptOnRead(
       field
     }) {
       try {
-        if (!cloakedStringRegex.test(cipherText)) {
+        if (!decryptFn && !cloakedStringRegex.test(cipherText)) {
           return
         }
-        const decryptionKey = findKeyForMessage(cipherText, keys.keychain)
-        const clearText = decryptStringSync(cipherText, decryptionKey)
+
+        const clearText =
+          decryptFn !== undefined
+            ? decryptFn(cipherText)
+            : decryptStringSync(
+                cipherText,
+                findKeyForMessage(cipherText, keys.keychain)
+              )
+
         objectPath.set(result, path, clearText)
       } catch (error) {
         const message = errors.fieldDecryptionError(model, field, path, error)
