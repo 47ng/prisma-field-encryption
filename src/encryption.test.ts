@@ -1,8 +1,8 @@
 import { formatKey } from '@47ng/cloak/dist/key'
-import { DMMFModels } from 'dmmf'
-import { MiddlewareParams } from 'types'
+import type { DMMFModels } from './dmmf'
 import { configureKeys, decryptOnRead, encryptOnWrite } from './encryption'
 import { errors } from './errors'
+import type { MiddlewareParams } from './types'
 
 const ENCRYPTION_TEST_KEY =
   'k1.aesgcm256.DbQoar8ZLuUsOHZNyrnjlskInHDYlzF3q6y1KGM7DUM='
@@ -66,7 +66,7 @@ describe('encryption', () => {
   describe('encryptOnWrite', () => {
     test('Should call custom cypher encrypt function', async () => {
       const encryptFunction = jest.fn(
-        (decripted: string) => `fake-encription-${decripted}`
+        (decrypted: string) => `fake-encryption-${decrypted}`
       )
 
       const name = 'value'
@@ -110,7 +110,7 @@ describe('encryption', () => {
   describe('decryptOnRead', () => {
     test('Should call custom cypher decrypt function', async () => {
       const decryptFunction = jest.fn(
-        (encrypted: string) => `fake-decription-${encrypted}`
+        (encrypted: string) => `fake-decryption-${encrypted}`
       )
 
       const params: MiddlewareParams = {
