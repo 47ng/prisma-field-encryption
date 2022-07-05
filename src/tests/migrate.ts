@@ -1,6 +1,8 @@
 // @ts-ignore
 import { migrate } from './migrations'
-import { client } from './prismaClient'
+import { createClient, defaultMiddleware } from './prismaClient'
+
+const client = createClient(defaultMiddleware)
 
 async function main() {
   await Promise.all([

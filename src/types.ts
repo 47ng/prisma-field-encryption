@@ -13,15 +13,20 @@ export type EncryptionFn = (value: string) => string
 export type DecryptionFn = (value: string) => string
 
 export type CipherFunctions = {
-  encrypt: EncryptionFn
-  decrypt: DecryptionFn
+  encryptFn: EncryptionFn
+  decryptFn: DecryptionFn
+  encryptionKey?: never
+  decryptionKeys?: never
 }
 
-export interface Configuration {
+export type Keys = {
   encryptionKey?: string
   decryptionKeys?: string[]
-  cipher?: CipherFunctions
+  encryptFn?: never
+  decryptFn?: never
 }
+
+export type Configuration = CipherFunctions | Keys | {}
 
 export interface FieldConfiguration {
   encrypt: boolean

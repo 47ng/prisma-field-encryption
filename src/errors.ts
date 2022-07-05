@@ -8,6 +8,11 @@ const prefixWarning = (input: string) => `${header} Warning: ${input}`
 export const errors = {
   // Setup errors
   noEncryptionKey: prefixError('no encryption key provided.'),
+  invalidConfig: prefixError('invalid configuration provided.'),
+  invalidKeysConfiguration: prefixError('invalid keys configuration provided.'),
+  invalidFunctionsConfiguration: prefixError(
+    'invalid cipher functions configuration provided.'
+  ),
   unsupportedFieldType: (model: Prisma.DMMF.Model, field: Prisma.DMMF.Field) =>
     prefixError(
       `encryption enabled for field ${model.name}.${field.name} of unsupported type ${field.type}: only String fields can be encrypted.`

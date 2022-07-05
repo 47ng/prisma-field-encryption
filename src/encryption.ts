@@ -12,7 +12,14 @@ import produce, { Draft } from 'immer'
 import objectPath from 'object-path'
 import type { DMMFModels } from './dmmf'
 import { errors, warnings } from './errors'
-import type { MiddlewareParams, EncryptionFn, DecryptionFn } from './types'
+import type {
+  MiddlewareParams,
+  EncryptionFn,
+  DecryptionFn,
+  Configuration,
+  CipherFunctions,
+  Keys
+} from './types'
 import { visitInputTargetFields, visitOutputTargetFields } from './visitor'
 
 export interface KeysConfiguration {
@@ -20,14 +27,91 @@ export interface KeysConfiguration {
   keychain: CloakKeychain
 }
 
+export interface FunctionsConfiguration {
+  encryptFn: EncryptionFn
+  decryptFn: DecryptionFn
+}
+
 export interface ConfigureKeysParams {
   encryptionKey?: string
   decryptionKeys?: string[]
 }
 
-export function configureKeys(config: ConfigureKeysParams): KeysConfiguration {
+export interface KeysAndFunctionsConfiguration {
+  keys: KeysConfiguration | null
+  cipherFunctions: CipherFunctions | null
+  method: Method
+}
+
+const ENCRYPTION_KEY_PROP = 'encryptionKey'
+const DECRYPTION_KEYS_PROP = 'decryptionKeys'
+const ENCRYPTION_FN_PROP = 'encryptFn'
+const DECRYPTION_FN_PROP = 'decryptFn'
+
+export type Method = 'CUSTOM' | 'DEFAULT'
+
+export function configureKeysAndFunctions(
+  config: Configuration
+): KeysAndFunctionsConfiguration {
+  const method: Method = getMethod(config)
+  const keys = method === 'DEFAULT' ? configureKeys(config) : null
+  const cipherFunctions =
+    method === 'CUSTOM' ? configureFunctions(config) : null
+
+  return { cipherFunctions, keys, method }
+}
+
+export function getMethod(config: Configuration): Method {
+  if (isDefaultConfiguration(config)) {
+    return 'DEFAULT'
+  }
+
+  if (isCustomConfiguration(config)) {
+    return 'CUSTOM'
+  }
+
+  throw new Error(errors.invalidConfig)
+}
+
+export function isDefaultConfiguration(config: Configuration): boolean {
+  return !(ENCRYPTION_FN_PROP in config) && !(DECRYPTION_FN_PROP in config)
+}
+
+export function isCustomConfiguration(config: Configuration): boolean {
+  return (
+    ENCRYPTION_FN_PROP in config &&
+    DECRYPTION_FN_PROP in config &&
+    !(ENCRYPTION_KEY_PROP in config) &&
+    !(DECRYPTION_KEYS_PROP in config)
+  )
+}
+
+export function configureFunctions(
+  config: Configuration
+): FunctionsConfiguration {
+  const encryptFn = (config as CipherFunctions)[ENCRYPTION_FN_PROP]
+  const decryptFn = (config as CipherFunctions)[DECRYPTION_FN_PROP]
+
+  if (typeof encryptFn !== 'function' || typeof decryptFn !== 'function') {
+    throw new Error(errors.invalidFunctionsConfiguration)
+  }
+
+  const cipherFunctions = {
+    encryptFn,
+    decryptFn
+  }
+
+  return cipherFunctions
+}
+
+export function configureKeys(config: Configuration): KeysConfiguration {
+  const configureKeysParams: ConfigureKeysParams = {
+    encryptionKey: (config as Keys)[ENCRYPTION_KEY_PROP],
+    decryptionKeys: (config as Keys)[DECRYPTION_KEYS_PROP]
+  }
+
   const encryptionKey =
-    config.encryptionKey || process.env.PRISMA_FIELD_ENCRYPTION_KEY
+    configureKeysParams.encryptionKey || process.env.PRISMA_FIELD_ENCRYPTION_KEY
 
   if (!encryptionKey) {
     throw new Error(errors.noEncryptionKey)
@@ -40,7 +124,7 @@ export function configureKeys(config: ConfigureKeysParams): KeysConfiguration {
   const decryptionKeys: string[] = Array.from(
     new Set([
       encryptionKey,
-      ...(config.decryptionKeys ?? decryptionKeysFromEnv)
+      ...(configureKeysParams.decryptionKeys ?? decryptionKeysFromEnv)
     ])
   )
 
@@ -66,9 +150,10 @@ const whereClauseRegExp = /\.where\./
 
 export function encryptOnWrite(
   params: MiddlewareParams,
-  keys: KeysConfiguration,
   models: DMMFModels,
   operation: string,
+  method: Method,
+  keys: KeysConfiguration | null,
   encryptFn?: EncryptionFn
 ) {
   if (!writeOperations.includes(params.action)) {
@@ -95,10 +180,19 @@ export function encryptOnWrite(
           console.warn(warnings.whereClause(operation, path))
         }
         try {
-          const cipherText =
-            encryptFn !== undefined
-              ? encryptFn(clearText)
-              : encryptStringSync(clearText, keys.encryptionKey)
+          let cipherText: string | undefined
+
+          if (method === 'CUSTOM' && !!encryptFn) {
+            cipherText = encryptFn(clearText)
+          }
+
+          if (method === 'DEFAULT' && !!keys) {
+            cipherText = encryptStringSync(clearText, keys.encryptionKey)
+          }
+
+          if (!cipherText) {
+            throw new Error(errors.invalidConfig)
+          }
 
           objectPath.set(draft.args, path, cipherText)
         } catch (error) {
@@ -118,9 +212,10 @@ export function encryptOnWrite(
 export function decryptOnRead(
   params: MiddlewareParams,
   result: any,
-  keys: KeysConfiguration,
   models: DMMFModels,
   operation: string,
+  method: Method,
+  keys: KeysConfiguration | null,
   decryptFn?: DecryptionFn
 ) {
   // Analyse the query to see if there's anything to decrypt.
@@ -152,13 +247,22 @@ export function decryptOnRead(
           return
         }
 
-        const clearText =
-          decryptFn !== undefined
-            ? decryptFn(cipherText)
-            : decryptStringSync(
-                cipherText,
-                findKeyForMessage(cipherText, keys.keychain)
-              )
+        let clearText: string | undefined
+
+        if (method === 'CUSTOM' && !!decryptFn) {
+          clearText = decryptFn(cipherText)
+        }
+
+        if (method === 'DEFAULT' && !!keys) {
+          clearText = decryptStringSync(
+            cipherText,
+            findKeyForMessage(cipherText, keys.keychain)
+          )
+        }
+
+        if (!clearText) {
+          throw new Error(errors.invalidConfig)
+        }
 
         objectPath.set(result, path, clearText)
       } catch (error) {
