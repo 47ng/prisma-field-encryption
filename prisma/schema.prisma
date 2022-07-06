@@ -18,6 +18,7 @@ model User {
   id           Int     @id @default(autoincrement())
   email        String  @unique
   name         String? /// @encrypted
+  nameHash     String? /// @encryption:hash(name)
   posts        Post[]
   pinnedPost   Post?   @relation(fields: [pinnedPostId], references: [id], name: "pinnedPost")
   pinnedPostId Int?

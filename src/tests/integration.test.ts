@@ -17,6 +17,50 @@ describe('integration', () => {
     expect(dbValue.name).toMatch(cloakedStringRegex) // encrypted in database
   })
 
+  test('query user by encrypted field', async () => {
+    const received = await client.user.findFirst({
+      where: {
+        name: 'James Bond'
+      }
+    })
+    expect(received!.name).toEqual('James Bond')
+  })
+
+  test('query user by encrypted field (with equals)', async () => {
+    const received = await client.user.findFirst({
+      where: {
+        name: {
+          equals: 'James Bond'
+        }
+      }
+    })
+    expect(received!.name).toEqual('James Bond')
+  })
+
+  test('query user by encrypted field with complex query', async () => {
+    const received = await client.user.findFirst({
+      where: {
+        OR: [
+          {
+            name: {
+              equals: 'James Bond'
+            }
+          },
+          {
+            AND: [
+              {
+                NOT: {
+                  name: 'Dr. No'
+                }
+              }
+            ]
+          }
+        ]
+      }
+    })
+    expect(received!.name).toEqual('James Bond')
+  })
+
   test('delete user', async () => {
     const received = await client.user.delete({ where: { email } })
     expect(received.name).toEqual('James Bond')

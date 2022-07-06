@@ -9,6 +9,15 @@ export const errors = {
   noEncryptionKey: `${error}: no encryption key provided.`,
   unsupportedFieldType: (model: DMMFModel, field: DMMFField) =>
     `${error}: encryption enabled for field ${model.name}.${field.name} of unsupported type ${field.type}: only String fields can be encrypted.`,
+  unsupporteHashFieldType: (model: DMMFModel, field: DMMFField) =>
+    `${error}: hash enabled for field ${model.name}.${field.name} of unsupported type ${field.type}: only String fields can contain hashes.`,
+  hashSourceFieldNotFound: (
+    model: DMMFModel,
+    hashField: DMMFField,
+    sourceField: string
+  ) => `${error}: no such field \`${sourceField}\` in ${model.name}
+  -> Referenced by hash field ${model.name}.${hashField.name}`,
+
   // Runtime errors
   fieldEncryptionError: (
     model: string,
@@ -75,8 +84,28 @@ export const warnings = {
   Read more: https://github.com/47ng/prisma-field-encryption#migrations`,
 
   // Runtime warnings
-  whereClause: (operation: string, path: string) =>
-    `${warning}: you're using an encrypted field in a \`where\` clause.
+  whereClauseNoHash: (operation: string, path: string) =>
+    `${warning}: you're using an encrypted field in a \`where\` clause without a hash.
   -> In ${operation}: ${path}
-  This will not work, read more: https://github.com/47ng/prisma-field-encryption#caveats--limitations`
+  This will not work as-is, read more: https://github.com/47ng/prisma-field-encryption#caveats--limitations
+  Consider adding a hash field to enable searching encrypted fields:
+  https://github.com/47ng/prisma-field-encryption#enable-search-with-hashes
+  `,
+
+  unsupportedHashAlgorithm: (
+    model: string,
+    field: string,
+    algorithm: string
+  ) => `${warning}: unsupported hash algorithm \`${algorithm}\` for hash field ${model}.${field}
+  -> Valid values are algorithms accepted by Node's crypto.createHash:
+  https://nodejs.org/dist/latest-v16.x/docs/api/crypto.html#cryptocreatehashalgorithm-options
+`,
+  unsupportedEncoding: (
+    model: string,
+    field: string,
+    encoding: string,
+    io: string
+  ) => `${warning}: unsupported ${io} encoding \`${encoding}\` for hash field ${model}.${field}
+  -> Valid values are utf8, base64, hex
+`
 }

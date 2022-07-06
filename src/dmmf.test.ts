@@ -1,66 +1,115 @@
 import { getDMMF } from '@prisma/sdk'
-import { analyseDMMF, DMMFModels, parseAnnotation } from './dmmf'
+import {
+  analyseDMMF,
+  DMMFModels,
+  parseEncryptedAnnotation,
+  parseHashAnnotation
+} from './dmmf'
 
 describe('dmmf', () => {
-  describe('parseAnnotation', () => {
+  describe('parseEncryptedAnnotation', () => {
     test('no annotation at all', () => {
-      const received = parseAnnotation()
+      const received = parseEncryptedAnnotation()
       const expected = null
       expect(received).toEqual(expected)
     })
 
     test('no @encrypted keyword', () => {
-      const received = parseAnnotation('not encrypted')
+      const received = parseEncryptedAnnotation('not encrypted')
       const expected = null
       expect(received).toEqual(expected)
     })
 
     test('@encrypted keyword alone', () => {
-      const received = parseAnnotation(' pre @encrypted post ')
+      const received = parseEncryptedAnnotation(' pre @encrypted post ')
       expect(received!.encrypt).toEqual(true)
       expect(received!.strictDecryption).toEqual(false)
     })
 
     test('@encrypted?with=junk', () => {
-      const received = parseAnnotation(' pre @encrypted?with=junk post ')
+      const received = parseEncryptedAnnotation(
+        ' pre @encrypted?with=junk post '
+      )
       expect(received!.encrypt).toEqual(true)
       expect(received!.strictDecryption).toEqual(false)
     })
 
     test('<deprecated> @encrypted?strict', () => {
-      const received = parseAnnotation(' pre @encrypted?strict post ')
+      const received = parseEncryptedAnnotation(' pre @encrypted?strict post ')
       expect(received!.encrypt).toEqual(true)
       expect(received!.strictDecryption).toEqual(true)
     })
 
     test('<deprecated> @encrypted?readonly', () => {
-      const received = parseAnnotation(' pre @encrypted?readonly post ')
+      const received = parseEncryptedAnnotation(
+        ' pre @encrypted?readonly post '
+      )
       expect(received!.encrypt).toEqual(false)
       expect(received!.strictDecryption).toEqual(false)
     })
 
     test('<deprecated> readonly takes precedence over strict', () => {
-      const received = parseAnnotation(' pre @encrypted?strict&readonly post ')
+      const received = parseEncryptedAnnotation(
+        ' pre @encrypted?strict&readonly post '
+      )
       expect(received!.encrypt).toEqual(false)
       expect(received!.strictDecryption).toEqual(false)
     })
 
     test('unknown mode', () => {
-      const received = parseAnnotation(' pre @encrypted?mode=foo post ')
+      const received = parseEncryptedAnnotation(
+        ' pre @encrypted?mode=foo post '
+      )
       expect(received!.encrypt).toEqual(true)
       expect(received!.strictDecryption).toEqual(false)
     })
 
     test('strict mode', () => {
-      const received = parseAnnotation(' pre @encrypted?mode=strict post ')
+      const received = parseEncryptedAnnotation(
+        ' pre @encrypted?mode=strict post '
+      )
       expect(received!.encrypt).toEqual(true)
       expect(received!.strictDecryption).toEqual(true)
     })
 
     test('readonly mode', () => {
-      const received = parseAnnotation(' pre @encrypted?mode=readonly post ')
+      const received = parseEncryptedAnnotation(
+        ' pre @encrypted?mode=readonly post '
+      )
       expect(received!.encrypt).toEqual(false)
       expect(received!.strictDecryption).toEqual(false)
+    })
+  })
+
+  describe('parseHashAnnotation', () => {
+    test('no annotation at all', () => {
+      const received = parseHashAnnotation()
+      const expected = null
+      expect(received).toEqual(expected)
+    })
+
+    test('missing field name', () => {
+      const received = parseHashAnnotation('pre @encryption:hash post')
+      const expected = null
+      expect(received).toEqual(expected)
+    })
+
+    test('defaults', () => {
+      const received = parseHashAnnotation(' pre @encryption:hash(foo) post ')
+      expect(received!.sourceField).toEqual('foo')
+      expect(received!.algorithm).toEqual('sha256')
+      expect(received!.inputEncoding).toEqual('utf8')
+      expect(received!.outputEncoding).toEqual('hex')
+    })
+
+    test('with options', () => {
+      const received = parseHashAnnotation(
+        ' pre @encryption:hash(foo)?algorithm=sha512&inputEncoding=base64&outputEncoding=base64 post'
+      )
+      expect(received!.sourceField).toEqual('foo')
+      expect(received!.algorithm).toEqual('sha512')
+      expect(received!.inputEncoding).toEqual('base64')
+      expect(received!.outputEncoding).toEqual('base64')
     })
   })
 
@@ -71,6 +120,7 @@ describe('dmmf', () => {
           id           Int     @id @default(autoincrement())
           email        String  @unique
           name         String? /// @encrypted
+          nameHash     String? /// @encryption:hash(name)
           posts        Post[]
           pinnedPost   Post?   @relation(fields: [pinnedPostId], references: [id], name: "pinnedPost")
           pinnedPostId Int?
@@ -105,7 +155,16 @@ describe('dmmf', () => {
     const expected: DMMFModels = {
       User: {
         fields: {
-          name: { encrypt: true, strictDecryption: false }
+          name: {
+            encrypt: true,
+            strictDecryption: false,
+            hash: {
+              targetField: 'nameHash',
+              algorithm: 'sha256',
+              inputEncoding: 'utf8',
+              outputEncoding: 'hex'
+            }
+          }
         },
         connections: {
           posts: { modelName: 'Post', isList: true },

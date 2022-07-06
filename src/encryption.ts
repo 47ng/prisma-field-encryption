@@ -8,12 +8,12 @@ import {
   ParsedCloakKey,
   parseKeySync
 } from '@47ng/cloak'
-
 import produce, { Draft } from 'immer'
 import objectPath from 'object-path'
 import { debug } from './debugger'
 import type { DMMFModels } from './dmmf'
 import { errors, warnings } from './errors'
+import { hashString } from './hash'
 import type { Configuration, MiddlewareParams } from './types'
 import { visitInputTargetFields, visitOutputTargetFields } from './visitor'
 
@@ -51,27 +51,12 @@ export function configureKeys(config: Configuration): KeysConfiguration {
 
 // --
 
-const writeOperations = [
-  'create',
-  'createMany',
-  'update',
-  'updateMany',
-  'upsert'
-]
-
-const whereClauseRegExp = /\.where\./
-
 export function encryptOnWrite<Models extends string, Actions extends string>(
   params: MiddlewareParams<Models, Actions>,
   keys: KeysConfiguration,
   models: DMMFModels,
   operation: string
 ) {
-  if (!writeOperations.includes(params.action)) {
-    debug.encryption(`No encryption needed for ${operation}`)
-    return params // No input data to encrypt
-  }
-
   debug.encryption('Clear-text input: %O', params)
   const encryptionErrors: string[] = []
 
@@ -91,13 +76,40 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
           if (!fieldConfig.encrypt) {
             return
           }
-          if (whereClauseRegExp.test(path)) {
-            console.warn(warnings.whereClause(operation, path))
+          const wherePath = rewriteWhereClausePath(
+            path,
+            field,
+            fieldConfig.hash?.targetField ?? field + 'Hash'
+          )
+          if (wherePath) {
+            if (!fieldConfig.hash) {
+              console.warn(warnings.whereClauseNoHash(operation, path))
+            } else {
+              const hash = hashString(clearText, fieldConfig.hash)
+              debug.encryption(
+                `Swapping encrypted search of ${model}.${field} with hash search under ${fieldConfig.hash.targetField} (hash: ${hash})`
+              )
+              objectPath.del(draft.args, path)
+              objectPath.set(draft.args, wherePath, hash)
+              return
+            }
           }
           try {
             const cipherText = encryptStringSync(clearText, keys.encryptionKey)
             objectPath.set(draft.args, path, cipherText)
             debug.encryption(`Encrypted ${model}.${field} at path \`${path}\``)
+            if (fieldConfig.hash) {
+              const hash = hashString(clearText, fieldConfig.hash)
+              const hashPath = rewriteWritePath(
+                path,
+                field,
+                fieldConfig.hash.targetField
+              )
+              objectPath.set(draft.args, hashPath, hash)
+              debug.encryption(
+                `Added hash ${hash} of ${model}.${field} under ${fieldConfig.hash.targetField}`
+              )
+            }
           } catch (error) {
             encryptionErrors.push(
               errors.fieldEncryptionError(model, field, path, error)
@@ -179,4 +191,34 @@ export function decryptOnRead<Models extends string, Actions extends string>(
     )
   }
   debug.decryption('Decrypted result: %O', result)
+}
+
+function rewriteWhereClausePath(
+  path: string,
+  field: string,
+  hashField: string
+) {
+  const items = path.split('.').reverse()
+  if (!items.includes('where')) {
+    return null
+  }
+  if (items[0] === field) {
+    items[0] = hashField
+    return items.reverse().join('.')
+  }
+  if (items[0] === 'equals' && items[1] === field) {
+    items[1] = hashField
+    return items.reverse().join('.')
+  }
+  return null
+}
+
+function rewriteWritePath(path: string, field: string, hashField: string) {
+  const items = path.split('.').reverse()
+  if (items[0] === field) {
+    items[0] = hashField
+  } else if (items[0] === 'set' && items[1] === field) {
+    items[1] = hashField
+  }
+  return items.reverse().join('.')
 }

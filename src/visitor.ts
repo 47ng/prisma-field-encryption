@@ -21,6 +21,7 @@ export type TargetFieldVisitorFn = (targetField: TargetField) => void
 const makeVisitor = (
   models: DMMFModels,
   visitor: TargetFieldVisitorFn,
+  specialSubFields: string[],
   debug: Debugger
 ) =>
   function visitNode(state: VisitorState, { key, type, node, path }: Item) {
@@ -40,23 +41,25 @@ const makeVisitor = (
       visitor(targetField)
       return state
     }
-    // Special case: {field}.set for updates
-    if (
-      type === 'object' &&
-      key in model.fields &&
-      typeof (node as any)?.set === 'string'
-    ) {
-      const value: string = (node as any).set
-      const targetField: TargetField = {
-        field: key,
-        model: state.currentModel,
-        fieldConfig: model.fields[key],
-        path: path.join('.') + '.set',
-        value
+    // Special cases: {field}.set for updates, {field}.equals for queries
+    for (const specialSubField of specialSubFields) {
+      if (
+        type === 'object' &&
+        key in model.fields &&
+        typeof (node as any)?.[specialSubField] === 'string'
+      ) {
+        const value: string = (node as any)[specialSubField]
+        const targetField: TargetField = {
+          field: key,
+          model: state.currentModel,
+          fieldConfig: model.fields[key],
+          path: [...path, specialSubField].join('.'),
+          value
+        }
+        debug('Visiting %O', targetField)
+        visitor(targetField)
+        return state
       }
-      debug('Visiting %O', targetField)
-      visitor(targetField)
-      return state
     }
     if (['object', 'array'].includes(type) && key in model.connections) {
       // Follow the connection: from there on downwards, we're changing models.
@@ -79,9 +82,13 @@ export function visitInputTargetFields<
   models: DMMFModels,
   visitor: TargetFieldVisitorFn
 ) {
-  traverseTree(params.args, makeVisitor(models, visitor, debug.encryption), {
-    currentModel: params.model!
-  })
+  traverseTree(
+    params.args,
+    makeVisitor(models, visitor, ['equals', 'set'], debug.encryption),
+    {
+      currentModel: params.model!
+    }
+  )
 }
 
 export function visitOutputTargetFields<
@@ -93,7 +100,7 @@ export function visitOutputTargetFields<
   models: DMMFModels,
   visitor: TargetFieldVisitorFn
 ) {
-  traverseTree(result, makeVisitor(models, visitor, debug.decryption), {
+  traverseTree(result, makeVisitor(models, visitor, [], debug.decryption), {
     currentModel: params.model!
   })
 }

@@ -1,5 +1,11 @@
+import type { Encoding } from '@47ng/codec'
 import { errors, warnings } from './errors'
-import { DMMFDocument, dmmfDocumentParser, FieldConfiguration } from './types'
+import {
+  DMMFDocument,
+  dmmfDocumentParser,
+  FieldConfiguration,
+  HashFieldConfiguration
+} from './types'
 
 export interface ConnectionDescriptor {
   modelName: string
@@ -60,7 +66,7 @@ export function analyseDMMF(input: DMMFDocument): DMMFModels {
       cursor: cursorField?.name ?? idField?.name ?? uniqueField?.name,
       fields: model.fields.reduce<DMMFModelDescriptor['fields']>(
         (fields, field) => {
-          const fieldConfig = parseAnnotation(
+          const fieldConfig = parseEncryptedAnnotation(
             field.documentation,
             model.name,
             field.name
@@ -90,6 +96,28 @@ export function analyseDMMF(input: DMMFDocument): DMMFModels {
         {}
       )
     }
+    // Inject hash information
+    model.fields.forEach(field => {
+      const hashConfig = parseHashAnnotation(
+        field.documentation,
+        model.name,
+        field.name
+      )
+      if (!hashConfig) {
+        return
+      }
+      if (field.type !== 'String') {
+        throw new Error(errors.unsupporteHashFieldType(model, field))
+      }
+      const { sourceField, ...hash } = hashConfig
+      if (!(sourceField in modelDescriptor.fields)) {
+        throw new Error(
+          errors.hashSourceFieldNotFound(model, field, sourceField)
+        )
+      }
+      modelDescriptor.fields[hashConfig.sourceField].hash = hash
+    })
+
     if (
       Object.keys(modelDescriptor.fields).length > 0 &&
       !modelDescriptor.cursor
@@ -105,14 +133,16 @@ export function analyseDMMF(input: DMMFDocument): DMMFModels {
 
 // --
 
-const annotationRegex = /@encrypted(?<query>\?[\w=&]+)?/
+const encryptedAnnotationRegex = /@encrypted(?<query>\?[\w=&]+)?/
+const hashAnnotationRegex =
+  /@encryption:hash\((?<fieldName>\w+)\)(?<query>\?[\w=&]+)?/
 
-export function parseAnnotation(
+export function parseEncryptedAnnotation(
   annotation = '',
   model?: string,
   field?: string
 ): FieldConfiguration | null {
-  const match = annotation.match(annotationRegex)
+  const match = annotation.match(encryptedAnnotationRegex)
   if (!match) {
     return null
   }
@@ -137,4 +167,57 @@ export function parseAnnotation(
     encrypt: mode !== 'readonly',
     strictDecryption: mode === 'strict'
   }
+}
+
+export function parseHashAnnotation(
+  annotation = '',
+  model?: string,
+  field?: string
+): HashFieldConfiguration | null {
+  const match = annotation.match(hashAnnotationRegex)
+  if (!match || !match.groups?.fieldName) {
+    return null
+  }
+  const query = new URLSearchParams(match.groups.query ?? '')
+  const inputEncoding = (query.get('inputEncoding') as Encoding) ?? 'utf8'
+  if (
+    !isValidEncoding(inputEncoding) &&
+    process.env.NODE_ENV === 'development' &&
+    model &&
+    field
+  ) {
+    console.warn(
+      warnings.unsupportedEncoding(model, field, inputEncoding, 'input')
+    )
+  }
+  const outputEncoding = (query.get('outputEncoding') as Encoding) ?? 'hex'
+  if (
+    !isValidEncoding(outputEncoding) &&
+    process.env.NODE_ENV === 'development' &&
+    model &&
+    field
+  ) {
+    console.warn(
+      warnings.unsupportedEncoding(model, field, outputEncoding, 'output')
+    )
+  }
+  const saltEnv = query.get('saltEnv')
+  const salt =
+    query.get('salt') ??
+    (saltEnv
+      ? process.env[saltEnv]
+      : process.env.PRISMA_FIELD_ENCRYPTION_HASH_SALT)
+
+  return {
+    sourceField: match.groups.fieldName,
+    targetField: field ?? match.groups.fieldName + 'Hash',
+    algorithm: query.get('algorithm') ?? 'sha256',
+    salt,
+    inputEncoding,
+    outputEncoding
+  }
+}
+
+function isValidEncoding(encoding: string): encoding is Encoding {
+  return ['hex', 'base64', 'utf8'].includes(encoding)
 }

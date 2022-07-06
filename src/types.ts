@@ -7,6 +7,7 @@
  * or multiple client locations).
  */
 
+import type { Encoding } from '@47ng/codec'
 import { z } from 'zod'
 
 /**
@@ -63,12 +64,17 @@ export interface Configuration {
   dmmf?: DMMFDocument
 }
 
+export type HashFieldConfiguration = {
+  sourceField: string
+  targetField: string
+  algorithm: string
+  salt?: string
+  inputEncoding: Encoding
+  outputEncoding: Encoding
+}
+
 export interface FieldConfiguration {
   encrypt: boolean
   strictDecryption: boolean
-}
-
-export interface FieldMatcher {
-  regexp: RegExp
-  fieldConfig: FieldConfiguration
+  hash?: Omit<HashFieldConfiguration, 'sourceField'>
 }
