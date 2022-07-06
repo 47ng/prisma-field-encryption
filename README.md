@@ -45,7 +45,13 @@ _Tip: place the middleware as low as you need cleartext data._
 
 _Any middleware registered after field encryption will receive encrypted data for the selected fields._
 
-### 2. Setup your encryption key
+### 2. Setup your configuration
+
+You can use two distinct configuration setups. The first is using encryption key and the other way is using your own encrypt/decript functions and logic:
+
+> ⚠️ **Both ways are mutually exclusive, so using one of the configurations prevents you from using the other.**
+
+#### 2.1. Using encryption key
 
 Generate an encryption key:
 
@@ -78,6 +84,47 @@ client.$use(
 ```
 
 _Tip: a key provided in code will take precedence over a key from the environment._
+
+> ⚠️ **When using this method you will not be able to perform queries using encrypted fields.**
+
+#### 2.2. Using your own encrypt/decript functions
+
+Using your own functions is useful when you want full control over the cryptograph logic or whe you want to **perform queries over encrypted fields**, since you can use some static encryption algorithm. as static encryptions always generate the same hash for similar texts, you can encrypt the search field before performing the query.
+
+First of all you must define your encryp/decrypt functions and pass then directly in the middleware config.
+
+The following example shows using the native nodejs crypto module to perform encryption and decryption:
+
+```ts
+import crypto from 'crypto'
+
+function cipher(decrypted: unknown): string {
+  const cipher = crypto.createCipheriv(
+    'aes-256-gcm',
+    process.env.CRYPTO_SALT,
+    process.env.CRYPTO_IV
+  )
+  return cipher.update(decrypted, 'utf-8', 'hex')
+}
+
+function decipher(encrypted: string): unknown {
+  const decipher = crypto.createDecipheriv(
+    'aes-256-gcm',
+    process.env.CRYPTO_SALT,
+    process.env.CRYPTO_IV
+  )
+  return decipher.update(encrypted, 'hex', 'utf-8')
+}
+
+client.$use(
+  fieldEncryptionMiddleware({
+    encryptFn: (decrypted: unknown) => cipher(decrypted),
+    decryptFn: (encrypted: string) => decipher(encrypted)
+  })
+)
+```
+
+> _Note: a valid encrypt function must always receive a value(it can be any valid DB data) and return a encrypted string. The opposite is valid for the decryption function._
 
 ### 3. Annotate your schema
 
