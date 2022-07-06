@@ -34,11 +34,13 @@ jobs:
         name: Run integration tests
       - uses: coverallsapp/github-action@9ba913c152ae4be1327bfb9085dc806cedb44057
         name: Report code coverage
+        continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: 47ng/actions-slack-notify@main
         name: Notify on Slack
         if: always()
+        continue-on-error: true
         with:
           status: ${{ job.status }}
         env:
