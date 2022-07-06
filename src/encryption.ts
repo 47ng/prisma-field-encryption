@@ -157,7 +157,7 @@ export function decryptOnRead<Models extends string, Actions extends string>(
     }
   )
   if (decryptionErrors.length > 0) {
-    console.error(errors.encryptionErrorReport(operation, decryptionErrors))
+    console.error(errors.decryptionErrorReport(operation, decryptionErrors))
   }
   if (fatalDecryptionErrors.length > 0) {
     throw new Error(
