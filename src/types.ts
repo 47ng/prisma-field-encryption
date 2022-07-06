@@ -8,9 +8,9 @@ export type DMMF = typeof Prisma.dmmf
 
 // Internal types --
 
-export type EncryptionFn = (value: string) => string
+export type EncryptionFn = (value: any) => string
 
-export type DecryptionFn = (value: string) => string
+export type DecryptionFn = (value: string) => any
 
 export type CipherFunctions = {
   encryptFn: EncryptionFn
