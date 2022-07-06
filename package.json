@@ -48,6 +48,7 @@
   "dependencies": {
     "@47ng/cloak": "^1.1.0-beta.2",
     "@prisma/generator-helper": "^3.13.0",
+    "debug": "^4.3.4",
     "immer": "^9.0.12",
     "object-path": "^0.11.8",
     "zod": "^3.15.1"

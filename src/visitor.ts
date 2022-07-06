@@ -1,3 +1,5 @@
+import type { Debugger } from 'debug'
+import { debug } from './debugger'
 import { DMMFModels } from './dmmf'
 import { Item, traverseTree } from './traverseTree'
 import type { FieldConfiguration, MiddlewareParams } from './types'
@@ -16,7 +18,11 @@ export interface TargetField {
 
 export type TargetFieldVisitorFn = (targetField: TargetField) => void
 
-const makeVisitor = (models: DMMFModels, visitor: TargetFieldVisitorFn) =>
+const makeVisitor = (
+  models: DMMFModels,
+  visitor: TargetFieldVisitorFn,
+  debug: Debugger
+) =>
   function visitNode(state: VisitorState, { key, type, node, path }: Item) {
     const model = models[state.currentModel]
     if (!model || !key) {
@@ -30,6 +36,7 @@ const makeVisitor = (models: DMMFModels, visitor: TargetFieldVisitorFn) =>
         path: path.join('.'),
         value: node as string
       }
+      debug('Visiting %O', targetField)
       visitor(targetField)
       return state
     }
@@ -47,12 +54,16 @@ const makeVisitor = (models: DMMFModels, visitor: TargetFieldVisitorFn) =>
         path: path.join('.') + '.set',
         value
       }
+      debug('Visiting %O', targetField)
       visitor(targetField)
       return state
     }
     if (['object', 'array'].includes(type) && key in model.connections) {
       // Follow the connection: from there on downwards, we're changing models.
       // Return a new object to break from existing references.
+      debug(
+        `Changing model: following connection ${state.currentModel}.${key} to model ${model.connections[key].modelName}`
+      )
       return {
         currentModel: model.connections[key].modelName
       }
@@ -68,7 +79,7 @@ export function visitInputTargetFields<
   models: DMMFModels,
   visitor: TargetFieldVisitorFn
 ) {
-  traverseTree(params.args, makeVisitor(models, visitor), {
+  traverseTree(params.args, makeVisitor(models, visitor, debug.encryption), {
     currentModel: params.model!
   })
 }
@@ -82,7 +93,7 @@ export function visitOutputTargetFields<
   models: DMMFModels,
   visitor: TargetFieldVisitorFn
 ) {
-  traverseTree(result, makeVisitor(models, visitor), {
+  traverseTree(result, makeVisitor(models, visitor, debug.decryption), {
     currentModel: params.model!
   })
 }

@@ -268,9 +268,41 @@ prismaClient.$use(
 - [x] Add facilities for migrations & key rotation
 - [ ] Add compatibility with [@47ng/cloak](https://github.com/47ng/cloak) keychain environments
 
+## Debugging
+
+The middleware uses [`debug`](https://www.npmjs.com/package/debug) to
+print internal operations.
+
+> _Note: it will log keys and clear-text data, so be mindful of your logs destination_.
+
+The following namespaces are available:
+
+- `prisma-field-encryption:setup`: Setup (encryption/decryption keys & schema analysis)
+- `prisma-field-encryption:runtime`: Various generic runtime (per-query) info
+- `prisma-field-encryption:encryption`: Encryption-specific operations (clear-text input, per-field information and encrypted input)
+- `prisma-field-encryption:decryption`: Decryption-specific operations (raw data from the database, per-field information and decrypted result)
+- `prisma-field-encryption:*`: Logs everything
+
+Set the `DEBUG` environment variable to the namespaces you want to log:
+
+```shell
+$ DEBUG=prisma-field-encryption:* node ./index.js
+```
+
+> _Tip: you might want to set the `DEBUG_DEPTH` variable to control object printout depth._
+
 ## Caveats & Limitations
 
+### Field Type
+
 You can only encrypt `String` fields.
+
+PRs are welcome to support more field types, see the following issues for reference:
+
+- #11 for JSON fields
+- #26 for Bytes fields
+
+### Filtering (using `where`)
 
 You cannot filter on encrypted fields:
 
@@ -284,6 +316,14 @@ prisma.user.findUnique({ where: { name: 'secret' } })
 This is because the encryption is not deterministic: encrypting the same input multiple times will yield different outputs, due to the use of random initialisation vectors. Therefore Prisma cannot match the query to the data.
 
 For the same reason, indexes should not be placed on encrypted fields.
+
+One way to counteract this is to use a separate field that contains
+a one-way hash of the clear text data, and filter on it. That field can
+have a `@unique` directive and can be indexed.
+
+Note that this only works when filtering with exact matches.
+
+### Miscellaneous
 
 [Raw database access](https://www.prisma.io/docs/concepts/components/prisma-client/raw-database-access)
 operations are not supported.

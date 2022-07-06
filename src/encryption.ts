@@ -8,8 +8,10 @@ import {
   ParsedCloakKey,
   parseKeySync
 } from '@47ng/cloak'
+
 import produce, { Draft } from 'immer'
 import objectPath from 'object-path'
+import { debug } from './debugger'
 import type { DMMFModels } from './dmmf'
 import { errors, warnings } from './errors'
 import type { Configuration, MiddlewareParams } from './types'
@@ -66,9 +68,11 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
   operation: string
 ) {
   if (!writeOperations.includes(params.action)) {
+    debug.encryption(`No encryption needed for ${operation}`)
     return params // No input data to encrypt
   }
 
+  debug.encryption('Clear-text input: %O', params)
   const encryptionErrors: string[] = []
 
   const mutatedParams = produce(
@@ -93,6 +97,7 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
           try {
             const cipherText = encryptStringSync(clearText, keys.encryptionKey)
             objectPath.set(draft.args, path, cipherText)
+            debug.encryption(`Encrypted ${model}.${field} at path \`${path}\``)
           } catch (error) {
             encryptionErrors.push(
               errors.fieldEncryptionError(model, field, path, error)
@@ -105,6 +110,7 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
   if (encryptionErrors.length > 0) {
     throw new Error(errors.encryptionErrorReport(operation, encryptionErrors))
   }
+  debug.encryption('Encrypted input: %O', mutatedParams)
   return mutatedParams
 }
 
@@ -122,8 +128,13 @@ export function decryptOnRead<Models extends string, Actions extends string>(
     // and there are no included connections.
     // We can safely skip decryption for the returned data.
     // todo: Walk the include/select tree for a better decision.
+    debug.decryption(
+      `Skipping decryption: ${params.model} has no encrypted field and no connection was included`
+    )
     return
   }
+
+  debug.decryption('Raw result from database: %O', result)
 
   const decryptionErrors: string[] = []
   const fatalDecryptionErrors: string[] = []
@@ -146,6 +157,9 @@ export function decryptOnRead<Models extends string, Actions extends string>(
         const decryptionKey = findKeyForMessage(cipherText, keys.keychain)
         const clearText = decryptStringSync(cipherText, decryptionKey)
         objectPath.set(result, path, clearText)
+        debug.decryption(
+          `Decrypted ${model}.${field} at path \`${path}\` using key fingerprint ${decryptionKey.fingerprint}`
+        )
       } catch (error) {
         const message = errors.fieldDecryptionError(model, field, path, error)
         if (fieldConfig.strictDecryption) {
@@ -164,4 +178,5 @@ export function decryptOnRead<Models extends string, Actions extends string>(
       errors.decryptionErrorReport(operation, fatalDecryptionErrors)
     )
   }
+  debug.decryption('Decrypted result: %O', result)
 }
