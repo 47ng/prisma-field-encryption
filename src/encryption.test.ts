@@ -1,6 +1,6 @@
 import { formatKey } from '@47ng/cloak/dist/key'
 import { DMMFModels } from 'dmmf'
-import { Configuration, MiddlewareParams } from 'types'
+import { Configuration, MiddlewareParams } from './types'
 import {
   configureFunctions,
   configureKeys,

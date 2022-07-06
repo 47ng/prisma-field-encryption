@@ -43,7 +43,6 @@ export function traverseTree<State>(
 
   while (stack.length > 0) {
     const { state, ...item } = stack.shift()!
-
     const newState = callback(state, item)
     if (!isCollection(item.node)) {
       continue
