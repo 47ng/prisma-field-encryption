@@ -117,20 +117,24 @@ export function parseAnnotation(
     return null
   }
   const query = new URLSearchParams(match.groups?.query ?? '')
-  const readonly = query.get('readonly') !== null
   const strict = query.get('strict') !== null
+  const readonly = query.get('readonly') !== null
+  if (strict && process.env.NODE_ENV === 'development' && model && field) {
+    console.warn(warnings.deprecatedModeAnnotation(model, field, 'strict'))
+  }
+  if (readonly && process.env.NODE_ENV === 'development' && model && field) {
+    console.warn(warnings.deprecatedModeAnnotation(model, field, 'readonly'))
+  }
+  const mode =
+    query.get('mode') ?? (readonly ? 'readonly' : strict ? 'strict' : 'default')
   /* istanbul ignore next */
-  if (
-    process.env.NODE_ENV === 'development' &&
-    strict &&
-    readonly &&
-    model &&
-    field
-  ) {
-    console.warn(warnings.strictAndReadonlyAnnotation(model, field))
+  if (!['default', 'strict', 'readonly'].includes(mode)) {
+    if (process.env.NODE_ENV === 'development' && model && field) {
+      console.warn(warnings.unknownFieldModeAnnotation(model, field, mode))
+    }
   }
   return {
-    encrypt: !readonly,
-    strictDecryption: !readonly && strict
+    encrypt: mode !== 'readonly',
+    strictDecryption: mode === 'strict'
   }
 }

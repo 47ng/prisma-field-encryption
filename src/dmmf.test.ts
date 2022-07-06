@@ -27,20 +27,38 @@ describe('dmmf', () => {
       expect(received!.strictDecryption).toEqual(false)
     })
 
-    test('@encrypted?strict', () => {
+    test('<deprecated> @encrypted?strict', () => {
       const received = parseAnnotation(' pre @encrypted?strict post ')
       expect(received!.encrypt).toEqual(true)
       expect(received!.strictDecryption).toEqual(true)
     })
 
-    test('@encrypted?readonly', () => {
+    test('<deprecated> @encrypted?readonly', () => {
       const received = parseAnnotation(' pre @encrypted?readonly post ')
       expect(received!.encrypt).toEqual(false)
       expect(received!.strictDecryption).toEqual(false)
     })
 
-    test('readonly takes precedence over strict', () => {
+    test('<deprecated> readonly takes precedence over strict', () => {
       const received = parseAnnotation(' pre @encrypted?strict&readonly post ')
+      expect(received!.encrypt).toEqual(false)
+      expect(received!.strictDecryption).toEqual(false)
+    })
+
+    test('unknown mode', () => {
+      const received = parseAnnotation(' pre @encrypted?mode=foo post ')
+      expect(received!.encrypt).toEqual(true)
+      expect(received!.strictDecryption).toEqual(false)
+    })
+
+    test('strict mode', () => {
+      const received = parseAnnotation(' pre @encrypted?mode=strict post ')
+      expect(received!.encrypt).toEqual(true)
+      expect(received!.strictDecryption).toEqual(true)
+    })
+
+    test('readonly mode', () => {
+      const received = parseAnnotation(' pre @encrypted?mode=readonly post ')
       expect(received!.encrypt).toEqual(false)
       expect(received!.strictDecryption).toEqual(false)
     })

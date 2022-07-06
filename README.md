@@ -268,6 +268,39 @@ prismaClient.$use(
 - [x] Add facilities for migrations & key rotation
 - [ ] Add compatibility with [@47ng/cloak](https://github.com/47ng/cloak) keychain environments
 
+## Encryption / Decryption Controls
+
+For each field with an `/// @encrypted` annotation, you can specify two
+extra modes of operation:
+
+```prisma
+model User {
+  // Default mode behaves as follows:
+  // -> data coming into the database is encrypted
+  // <- data coming from the database is only decrypted if necessary
+  //    (allow existing clear-text data to pass through)
+  name String /// @encrypted
+
+  // Strict mode:
+  // -> data coming into the database is encrypted
+  // <- data coming from the database is decrypted, and throws an error
+  //    if decryption fails.
+  // This mode can be useful once you've run your data migrations
+  // and know that all data should be encrypted, or when you add
+  // a new encrypted field to a model.
+  ssn String /// @encrypted?mode=strict
+
+  // Readonly mode:
+  // -> data coming into the database is NOT encrypted
+  // <- data coming from the database is only decrypted if necessary
+  // This mode can be use to phase out encryption on a field that no longer
+  // requires encryption. Before removing the @encrypted annotation,
+  // run a data migration with this mode to decrypt all values for this
+  // field in the database.
+  noLongerSecret String /// @encrypted?mode=readonly
+}
+```
+
 ## Debugging
 
 The middleware uses [`debug`](https://www.npmjs.com/package/debug) to
@@ -354,7 +387,7 @@ will take care of:
 
 - Encrypting fields newly `/// @encrypted`
 - Rotating the encryption key when it changed
-- Decrypting fields where encryption is being disabled with `/// @encrypted?readonly`. Once that migration has run, you can remove the annotation on those fields.
+- Decrypting fields where encryption is being disabled with `/// @encrypted?mode=readonly`. Once that migration has run, you can remove the annotation on those fields.
 
 ## Do I Need This ?
 
