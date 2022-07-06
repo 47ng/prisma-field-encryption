@@ -268,7 +268,7 @@ prismaClient.$use(
 - [x] Add facilities for migrations & key rotation
 - [ ] Add compatibility with [@47ng/cloak](https://github.com/47ng/cloak) keychain environments
 
-## Encryption / Decryption Controls
+## Encryption / Decryption Modes
 
 For each field with an `/// @encrypted` annotation, you can specify two
 extra modes of operation:
