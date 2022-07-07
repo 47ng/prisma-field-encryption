@@ -32,7 +32,7 @@ export async function migrate(
   client: PrismaClient,
   reportProgress: ProgressReportCallback = defaultProgressReport
 ): Promise<number> {
-  return visitRecords<Cursor>({
+  return visitRecords<PrismaClient, Cursor>({
     modelName: '${modelName}',
     client,
     getTotalCount: client.${interfaceName}.count,
