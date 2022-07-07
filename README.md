@@ -424,7 +424,11 @@ The following namespaces are available:
 Set the `DEBUG` environment variable to the namespaces you want to log:
 
 ```shell
-$ DEBUG=prisma-field-encryption:* node ./index.js
+# macOS/Unix:
+$ DEBUG="prisma-field-encryption:*" npm run my-server-start-script
+
+# Windows:
+> set DEBUG="prisma-field-encryption:*" && npm run my-server-start-script
 ```
 
 > _Tip: you might want to set the `DEBUG_DEPTH` variable to control object printout depth._
