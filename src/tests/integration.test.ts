@@ -96,11 +96,25 @@ describe('integration', () => {
     expect(post.title).toEqual("I'm back") // clear text in the database
   })
 
+  test('update user', async () => {
+    const received = await client.user.update({
+      data: {
+        name: 'The name is Bond...'
+      },
+      where: {
+        email
+      }
+    })
+    const user = await sqlite.get({ table: 'User', where: { email } })
+    expect(received.name).toEqual('The name is Bond...')
+    expect(user.name).toMatch(cloakedStringRegex)
+  })
+
   test('update user (with set)', async () => {
     const received = await client.user.update({
       data: {
         name: {
-          set: 'Bond, James Bond.'
+          set: '...James Bond.'
         }
       },
       where: {
@@ -108,7 +122,7 @@ describe('integration', () => {
       }
     })
     const user = await sqlite.get({ table: 'User', where: { email } })
-    expect(received.name).toEqual('Bond, James Bond.')
+    expect(received.name).toEqual('...James Bond.')
     expect(user.name).toMatch(cloakedStringRegex)
   })
 
