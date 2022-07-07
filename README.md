@@ -157,14 +157,16 @@ To use it, add a field next to your encrypted field with the following annotatio
 
 ```prisma
 model User {
-  id        String @id
-  email     String @unique /// @encrypted
-  emailHash String @unique /// @encryption:hash(email) <- the name of the source field
+  id        String  @id
+  email     String  @unique /// @encrypted
+  emailHash String? @unique /// @encryption:hash(email) <- the name of the source field
 
   // Note that the @unique directive on `email` is here to enable
   // the Prisma user.findUnique({ where: { email }}) API,
   // and the @unique directive on `emailHash` is where you actually
   // ensure that there will be no duplicates (short of hash collisions).
+  // The emailHash field is marked as nullable so you don't need to specify
+  // it when creating records (it will be computed for you).
 }
 ```
 
