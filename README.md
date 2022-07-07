@@ -103,6 +103,14 @@ model User {
 
 _Tip: make sure you use a triple-slash. Double slash comments won't work._
 
+> #### Note on @db.VarChar & field max lengths
+>
+> Encryption adds quite a bit of overhead, so you'll need to raise your database
+> field maximum lengths (usually declared with `@db.VarChar(someNumber)` [or similar](https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string)).
+>
+> You can calculate the corresponding ciphertext length for a given clear-text length here:
+> https://cloak.47ng.com/ciphertext-length-calculator
+
 ### 4. Regenerate your client
 
 Make sure you have a generator for the Prisma client:
