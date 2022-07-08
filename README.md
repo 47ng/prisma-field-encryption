@@ -159,7 +159,7 @@ For the same reason, indexes should not be placed on encrypted fields.
 
 To circumvent this issue, the middleware provides support for a separate field
 containing a hash of the clear-text input, which is stable and can be used for
-matching.
+**exact** matching _(partial matching like `startsWith`, `contains` is not possible)_.
 
 To use it, add a field next to your encrypted field with the following annotation:
 
