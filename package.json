@@ -1,21 +1,20 @@
 {
-  "name": "prisma-field-encryption",
-  "version": "0.0.0-semantically-released",
-  "description": "Transparent field-level encryption at rest for Prisma",
+  "name": "prisma-custom-field-encryption",
+  "version": "0.0.1",
+  "description": "Transparent and customizable field-level encryption at rest for Prisma",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "bin": {
-    "prisma-field-encryption": "./dist/generator/main.js"
+    "prisma-custom-field-encryption": "./dist/generator/main.js"
   },
   "author": {
-    "name": "François Best",
-    "email": "contact@francoisbest.com",
-    "url": "https://francoisbest.com"
+    "name": "Victor Rodrigues",
+    "email": "marcelo.victor05@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/47ng/prisma-field-encryption"
+    "url": "https://github.com/Vitu-77/prisma-field-encryption"
   },
   "keywords": [
     "prisma",
