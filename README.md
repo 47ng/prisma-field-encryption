@@ -371,12 +371,6 @@ prismaClient.$use(
 )
 ```
 
-**Roadmap:**
-
-- [x] Provide multiple decryption keys
-- [x] Add facilities for migrations & key rotation
-- [ ] Add compatibility with [@47ng/cloak](https://github.com/47ng/cloak) keychain environments
-
 ## Encryption / decryption modes
 
 > _Support: introduced in version 1.4.0_
@@ -506,6 +500,12 @@ Cipher used: AES-GCM with 256 bit keys.
 Passwords should be hashed & salted using a slow, constant-time one-way function. However, this library could be used to encrypt the salted and hashed password as a [pepper](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#peppering) to provide an additional layer of security. It is recommended that the encryption key be stored in a [Hardware Security Module](https://en.wikipedia.org/wiki/Hardware_security_module) on the server.
 
 For hashing passwords, don't reinvent the wheel: use Argon2id if you can, otherwise scrypt.
+
+## Roadmap
+
+- [x] Provide multiple decryption keys
+- [x] Add facilities for migrations & key rotation
+- [ ] Add compatibility with [@47ng/cloak](https://github.com/47ng/cloak) keychain environments
 
 ## License
 
