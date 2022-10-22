@@ -184,6 +184,49 @@ describe('integration', () => {
     expect(category.name).toEqual('Quotes')
   })
 
+  test('top level with no encrypted field, nested with encrypted field - using select', async () => {
+    const created = await client.post.create({
+      data: {
+        title: "I'm back",
+        content: 'You only live twice.',
+        categories: {
+          create : {
+            name: 'Secret agents'
+          }
+        },
+        author: {
+          create: {
+            email: '005@hmss.gov.uk',
+            name: 'James Bond'
+          }
+        }
+      },
+      select: {
+        id: true,
+        author: true,
+        content: true,
+        categories: true
+      }
+    })
+
+    const category = await client.category.findFirst({
+      select: {
+        name: true,
+        posts: {
+          select: {
+            content: true
+          }
+        },
+      },
+      where: {
+        id: { equals: created.categories![0].id}
+      }
+    })
+
+    expect(category?.name).toEqual('Secret agents')
+    expect(category?.posts[0].content).toEqual('You only live twice.')
+  })
+
   test('immutable params', async () => {
     const email = 'xenia@cccp.ru'
     const params = {

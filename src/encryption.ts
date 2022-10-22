@@ -135,7 +135,7 @@ export function decryptOnRead<Models extends string, Actions extends string>(
 ) {
   // Analyse the query to see if there's anything to decrypt.
   const model = models[params.model!]
-  if (Object.keys(model.fields).length === 0 && !params.args?.include) {
+  if (Object.keys(model.fields).length === 0 && !params.args?.include && !params.args?.select) {
     // The queried model doesn't have any encrypted field,
     // and there are no included connections.
     // We can safely skip decryption for the returned data.
