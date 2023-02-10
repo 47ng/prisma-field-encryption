@@ -51,16 +51,7 @@ export const errors = {
   Read more: https://github.com/47ng/prisma-field-encryption#custom-cursors`,
   encryptedCursor: (model: string, field: string) =>
     `${error}: the field ${model}.${field} cannot be used as a cursor as it is encrypted.
-  Read more: https://github.com/47ng/prisma-field-encryption#custom-cursors`,
-  noInteractiveTransactions: `${error}: this generator requires enabling the \`interactiveTransactions\` preview feature on \`prisma-client-js\`:
-
-  generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["interactiveTransactions"] // <- Add this line
-  }
-
-  Read more: https://github.com/47ng/prisma-field-encryption#migrations
-`
+  Read more: https://github.com/47ng/prisma-field-encryption#custom-cursors`
 }
 
 export const warnings = {
