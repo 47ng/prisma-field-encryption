@@ -240,7 +240,6 @@ a built-in automatic migration generator, in the form of a Prisma generator:
 ```prisma
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["interactiveTransactions"]
 }
 
 generator fieldEncryptionMigrations {
@@ -249,7 +248,7 @@ generator fieldEncryptionMigrations {
 }
 ```
 
-_Tip: the migrations generator makes use of the `interactiveTransactions` preview feature. Make sure it's enabled on your Prisma Client generator._
+_Tip: the migrations generator makes use of the `interactiveTransactions` preview feature. Make sure it's enabled on your Prisma Client generator **only if Prisma Client version** is from `3.8.0 to 4.6.1`. Otherwise ignore this._
 
 Your migrations directory will contain:
 

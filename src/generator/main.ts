@@ -25,9 +25,6 @@ generatorHandler({
     const prismaClient = options.otherGenerators.find(
       each => each.provider.value === 'prisma-client-js'
     )!
-    if (!prismaClient.previewFeatures.includes('interactiveTransactions')) {
-      throw new Error(errors.noInteractiveTransactions)
-    }
 
     // mkdir -p
     try {
