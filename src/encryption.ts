@@ -59,7 +59,6 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
 ) {
   debug.encryption('Clear-text input: %O', params)
   const encryptionErrors: string[] = []
-
   const mutatedParams = produce(
     params,
     (draft: Draft<MiddlewareParams<Models, Actions>>) => {
@@ -93,6 +92,16 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
               objectPath.set(draft.args, wherePath, hash)
               return
             }
+          }
+          if (isOrderBy(path, field, clearText)) {
+            // Remove unsupported orderBy clause on encrypted text
+            // (makes no sense to sort ciphertext nor to encrypt 'asc' | 'desc')
+            console.error(errors.orderByUnsupported(model, field))
+            debug.encryption(
+              `Removing orderBy clause on ${model}.${field} at path \`${path}: ${clearText}\``
+            )
+            objectPath.del(draft.args, path)
+            return
           }
           try {
             const cipherText = encryptStringSync(clearText, keys.encryptionKey)
@@ -221,4 +230,13 @@ function rewriteWritePath(path: string, field: string, hashField: string) {
     items[1] = hashField
   }
   return items.reverse().join('.')
+}
+
+function isOrderBy(path: string, field: string, value: string) {
+  const items = path.split('.').reverse()
+  return (
+    items[1] === 'orderBy' &&
+    items[0] === field &&
+    ['asc', 'desc'].includes(value.toLowerCase())
+  )
 }

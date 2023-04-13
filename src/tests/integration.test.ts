@@ -124,6 +124,11 @@ describe('integration', () => {
     const user = await sqlite.get({ table: 'User', where: { email } })
     expect(received.name).toEqual('...James Bond.')
     expect(user.name).toMatch(cloakedStringRegex)
+    await client.user.delete({
+      where: {
+        email
+      }
+    })
   })
 
   test('complex query nesting', async () => {
@@ -190,13 +195,13 @@ describe('integration', () => {
         title: "I'm back",
         content: 'You only live twice.',
         categories: {
-          create : {
+          create: {
             name: 'Secret agents'
           }
         },
         author: {
           create: {
-            email: '005@hmss.gov.uk',
+            email,
             name: 'James Bond'
           }
         }
@@ -216,10 +221,10 @@ describe('integration', () => {
           select: {
             content: true
           }
-        },
+        }
       },
       where: {
-        id: { equals: created.categories![0].id}
+        id: { equals: created.categories![0].id }
       }
     })
 
@@ -240,5 +245,20 @@ describe('integration', () => {
     expect(params.data.name).toEqual('Xenia Onatop')
     expect(received.name).toEqual('Xenia Onatop')
     expect(user.name).toMatch(cloakedStringRegex)
+  })
+
+  test('orderBy is not supported', async () => {
+    const received = await client.user.findMany({
+      orderBy: {
+        name: 'desc'
+      }
+    })
+    expect(received.length).toEqual(3)
+    // If 'desc' order was respected, those should be the other way around.
+    // This test verifies that the directive is dropped and natural order
+    // is preserved.
+    expect(received[0].name).toEqual('Alec Trevelyan')
+    expect(received[1].name).toEqual('James Bond')
+    expect(received[2].name).toEqual('Xenia Onatop')
   })
 })

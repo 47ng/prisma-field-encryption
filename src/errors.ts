@@ -41,6 +41,13 @@ export const errors = {
     `${error}: decryption error(s) encountered in operation ${operation}:
   ${errors.join('\n  ')}`,
 
+  orderByUnsupported: (
+    model: string,
+    field: string
+  ) => `${error}: Running \`orderBy\` on encrypted field ${model}.${field} is not supported (results won't be sorted).
+  See: https://github.com/47ng/prisma-field-encryption/issues/43
+`,
+
   // Generator errors
   nonUniqueCursor: (model: string, field: string) =>
     `${error}: the cursor field ${model}.${field} should have a @unique attribute.
