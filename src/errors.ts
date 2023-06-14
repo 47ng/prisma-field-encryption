@@ -82,8 +82,8 @@ export const warnings = {
   Read more: https://github.com/47ng/prisma-field-encryption#migrations`,
 
   // Runtime warnings
-  whereClauseNoHash: (operation: string, path: string) =>
-    `${warning}: you're using an encrypted field in a \`where\` clause without a hash.
+  whereConnectClauseNoHash: (operation: string, path: string) =>
+    `${warning}: you're using an encrypted field in a \`where\` or \`connect\` clause without a hash.
   -> In ${operation}: ${path}
   This will not work as-is, read more: https://github.com/47ng/prisma-field-encryption#caveats--limitations
   Consider adding a hash field to enable searching encrypted fields:

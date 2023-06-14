@@ -75,21 +75,21 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
           if (!fieldConfig.encrypt) {
             return
           }
-          const wherePath = rewriteWhereClausePath(
+          const hashedPath = rewriteHashedFieldPath(
             path,
             field,
             fieldConfig.hash?.targetField ?? field + 'Hash'
           )
-          if (wherePath) {
+          if (hashedPath) {
             if (!fieldConfig.hash) {
-              console.warn(warnings.whereClauseNoHash(operation, path))
+              console.warn(warnings.whereConnectClauseNoHash(operation, path))
             } else {
               const hash = hashString(clearText, fieldConfig.hash)
               debug.encryption(
                 `Swapping encrypted search of ${model}.${field} with hash search under ${fieldConfig.hash.targetField} (hash: ${hash})`
               )
               objectPath.del(draft.args, path)
-              objectPath.set(draft.args, wherePath, hash)
+              objectPath.set(draft.args, hashedPath, hash)
               return
             }
           }
@@ -144,7 +144,11 @@ export function decryptOnRead<Models extends string, Actions extends string>(
 ) {
   // Analyse the query to see if there's anything to decrypt.
   const model = models[params.model!]
-  if (Object.keys(model.fields).length === 0 && !params.args?.include && !params.args?.select) {
+  if (
+    Object.keys(model.fields).length === 0 &&
+    !params.args?.include &&
+    !params.args?.select
+  ) {
     // The queried model doesn't have any encrypted field,
     // and there are no included connections.
     // We can safely skip decryption for the returned data.
@@ -202,21 +206,24 @@ export function decryptOnRead<Models extends string, Actions extends string>(
   debug.decryption('Decrypted result: %O', result)
 }
 
-function rewriteWhereClausePath(
+function rewriteHashedFieldPath(
   path: string,
   field: string,
   hashField: string
 ) {
   const items = path.split('.').reverse()
-  if (!items.includes('where')) {
-    return null
-  }
-  if (items[0] === field) {
+  // Where clause
+  if (items[1] === 'where' && items[0] === field) {
     items[0] = hashField
     return items.reverse().join('.')
   }
-  if (items[0] === 'equals' && items[1] === field) {
+  if (items[2] === 'where' && items[1] === field && items[0] === 'equals') {
     items[1] = hashField
+    return items.reverse().join('.')
+  }
+  // Connect clause
+  if (items[1] === 'connect' && items[0] === field) {
+    items[0] = hashField
     return items.reverse().join('.')
   }
   return null

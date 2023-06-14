@@ -1,4 +1,5 @@
 import { cloakedStringRegex } from '@47ng/cloak'
+import { errors } from '../errors'
 import { client } from './prismaClient'
 import * as sqlite from './sqlite'
 
@@ -24,6 +25,14 @@ describe('integration', () => {
       }
     })
     expect(received!.name).toEqual('James Bond')
+    // Should also work with long form:
+    await client.user.findFirst({
+      where: {
+        name: {
+          equals: 'James Bond'
+        }
+      }
+    })
   })
 
   test('query user by encrypted field (with equals)', async () => {
@@ -248,6 +257,8 @@ describe('integration', () => {
   })
 
   test('orderBy is not supported', async () => {
+    const cer = console.error
+    console.error = jest.fn()
     const received = await client.user.findMany({
       orderBy: {
         name: 'desc'
@@ -260,5 +271,29 @@ describe('integration', () => {
     expect(received[0].name).toEqual('Alec Trevelyan')
     expect(received[1].name).toEqual('James Bond')
     expect(received[2].name).toEqual('Xenia Onatop')
+    expect(console.error).toHaveBeenLastCalledWith(
+      errors.orderByUnsupported('User', 'name')
+    )
+    console.error = cer
+  })
+
+  test('connect on hashed field', async () => {
+    const content = 'You can connect to a hashed encrypted field.'
+    const received = await client.post.create({
+      data: {
+        title: 'Connected',
+        content,
+        author: {
+          connect: {
+            name: 'James Bond'
+          }
+        }
+      },
+      include: {
+        author: true
+      }
+    })
+    expect(received.author?.name).toEqual('James Bond')
+    expect(received.content).toEqual(content)
   })
 })
