@@ -213,11 +213,11 @@ function rewriteHashedFieldPath(
 ) {
   const items = path.split('.').reverse()
   // Where clause
-  if (items[1] === 'where' && items[0] === field) {
+  if (items.includes('where') && items[0] === field) {
     items[0] = hashField
     return items.reverse().join('.')
   }
-  if (items[2] === 'where' && items[1] === field && items[0] === 'equals') {
+  if (items.includes('where') && items[1] === field && items[0] === 'equals') {
     items[1] = hashField
     return items.reverse().join('.')
   }

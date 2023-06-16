@@ -19,20 +19,35 @@ describe('integration', () => {
   })
 
   test('query user by encrypted field', async () => {
-    const received = await client.user.findFirst({
+    let received = await client.user.findFirst({
       where: {
         name: 'James Bond'
       }
     })
     expect(received!.name).toEqual('James Bond')
     // Should also work with long form:
-    await client.user.findFirst({
+    received = await client.user.findFirst({
       where: {
         name: {
           equals: 'James Bond'
         }
       }
     })
+    expect(received!.name).toEqual('James Bond')
+    // Should also work with boolean logic:
+    received = await client.user.findFirst({
+      where: {
+        OR: [
+          {
+            name: 'James Bond'
+          },
+          {
+            name: 'Bond, James Bond.'
+          }
+        ]
+      }
+    })
+    expect(received!.name).toEqual('James Bond')
   })
 
   test('query user by encrypted field (with equals)', async () => {
