@@ -72,9 +72,6 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
           model,
           field
         }) {
-          if (!fieldConfig.encrypt) {
-            return
-          }
           const hashedPath = rewriteHashedFieldPath(
             path,
             field,
@@ -101,6 +98,9 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
               `Removing orderBy clause on ${model}.${field} at path \`${path}: ${clearText}\``
             )
             objectPath.del(draft.args, path)
+            return
+          }
+          if (!fieldConfig.encrypt) {
             return
           }
           try {
