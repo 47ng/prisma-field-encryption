@@ -19,10 +19,12 @@ See this [Twitter thread](https://twitter.com/fortysevenfx/status/14632651666828
 
 ## Installation
 
+Using your package manager of choice:
+
 ```shell
-$ yarn add prisma-field-encryption
-# or
-$ npm i prisma-field-encryption
+pnpm add prisma-field-encryption
+yarn add prisma-field-encryption
+npm install prisma-field-encryption
 ```
 
 > _Note: this requires Prisma 3.8.0 or higher._
@@ -172,9 +174,9 @@ model User {
   // Note that the @unique directive on `email` is here to enable
   // the Prisma user.findUnique({ where: { email }}) API,
   // and the @unique directive on `emailHash` is where you actually
-  // ensure that there will be no duplicates (short of hash collisions).
-  // The emailHash field is marked as nullable so you don't need to specify
-  // it when creating records (it will be computed for you).
+  // ensure that there will be no duplicates.
+  // The emailHash field is marked as nullable so you don't need to specify it
+  // when creating records (it will be computed for you).
 }
 ```
 
@@ -442,8 +444,8 @@ You can only encrypt `String` fields.
 
 PRs are welcome to support more field types, see the following issues for reference:
 
-- #11 for JSON fields
-- #26 for Bytes fields
+- [#11](https://github.com/47ng/prisma-field-encryption/issues/11) for JSON fields
+- [#26](https://github.com/47ng/prisma-field-encryption/issues/26) for Bytes fields
 
 ### Miscellaneous
 
@@ -492,7 +494,14 @@ them to authenticate your users, but nobody else should have access to them.
 
 Cipher used: AES-GCM with 256 bit keys.
 
-## Obligatory disclaimer about passwords
+## Disclaimers
+
+The author cannot be made liable for any misuse of this software, as the
+[MIT license](./LICENSE) states (the uppercase paragraph at the end).
+
+That being said, a little SecOps common sense goes a long way:
+
+## Passwords
 
 🚨 **DO NOT USE THIS TO ENCRYPT PASSWORDS WITHOUT ADDITIONAL SECURITY MEASURES** 🚨
 
@@ -500,11 +509,16 @@ Passwords should be hashed & salted using a slow, constant-time one-way function
 
 For hashing passwords, don't reinvent the wheel: use Argon2id if you can, otherwise scrypt.
 
+## PCI-DSS
+
+This software is **not** compliant with PCI-DSS standards. **DO NOT** use it to
+encrypt credit card numbers or any other payment method information.
+
 ## Roadmap
 
 - [x] Provide multiple decryption keys
 - [x] Add facilities for migrations & key rotation
-- [ ] Add compatibility with [@47ng/cloak](https://github.com/47ng/cloak) keychain environments
+- [ ] v2 cryptographic design with AEAD - [RFC #54](https://github.com/47ng/prisma-field-encryption/issues/54)
 
 ## License
 
