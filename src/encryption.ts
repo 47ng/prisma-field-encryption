@@ -8,7 +8,7 @@ import {
   ParsedCloakKey,
   parseKeySync
 } from '@47ng/cloak'
-import produce, { Draft } from 'immer'
+import { Draft, produce } from 'immer'
 import objectPath from 'object-path'
 import { debug } from './debugger'
 import type { DMMFModels } from './dmmf'
