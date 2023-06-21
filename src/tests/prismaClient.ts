@@ -1,8 +1,8 @@
 import { fieldEncryptionMiddleware } from '../index'
 import { Prisma, PrismaClient } from './.generated/client'
 
-export const TEST_ENCRYPTION_KEY =
-  'k1.aesgcm256.OsqVmAOZBB_WW3073q1wU4ag0ap0ETYAYMh041RuxuI='
+const TEST_ENCRYPTION_KEY =
+  'k1.aesgcm256.__________________________________________8='
 
 export const logger =
   process.env.PRISMA_FIELD_ENCRYPTION_LOG === 'true'
