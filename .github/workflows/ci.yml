@@ -1,5 +1,8 @@
 name: Continuous Integration
 
+env:
+  FORCE_COLOR: 3
+
 on:
   push:
     branches:
@@ -30,8 +33,16 @@ jobs:
             ${{ runner.os }}-yarn-
       - run: yarn install
         name: Install dependencies
-      - run: yarn ci
-        name: Run integration tests
+      - name: Run integration tests
+        run: |
+          yarn build
+          yarn test:types
+          yarn test:unit
+          USE_MIDDLEWARE=1 yarn test:integration
+          USE_EXTENSIONS=1 yarn test:integration
+          yarn test:coverage:merge
+          yarn test:coverage:report
+
       - uses: coverallsapp/github-action@c7885c00cb7ec0b8f9f5ff3f53cddb980f7a4412
         name: Report code coverage
         continue-on-error: true

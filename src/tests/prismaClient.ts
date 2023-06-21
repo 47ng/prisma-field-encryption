@@ -1,53 +1,26 @@
-import { fieldEncryptionMiddleware } from '../index'
+import { fieldEncryptionExtension, fieldEncryptionMiddleware } from '../index'
+import { Configuration } from '../types'
 import { Prisma, PrismaClient } from './.generated/client'
 
 const TEST_ENCRYPTION_KEY =
   'k1.aesgcm256.__________________________________________8='
 
-export const logger =
-  process.env.PRISMA_FIELD_ENCRYPTION_LOG === 'true'
-    ? console
-    : {
-        log: (_args: any) => {},
-        info: (_args: any) => {},
-        dir: (_args: any) => {},
-        error: console.error, // Still log errors
-        warn: console.warn // and warnings
-      }
+const config: Configuration = {
+  encryptionKey: TEST_ENCRYPTION_KEY,
+  dmmf: Prisma.dmmf
+}
 
-export const client = new PrismaClient()
+const useMiddleware = Boolean(process.env.USE_MIDDLEWARE)
+const useExtensions = Boolean(process.env.USE_EXTENSIONS)
 
-client.$use(async (params, next) => {
-  const operation = `${params.model}.${params.action}`
-  logger.dir(
-    { '👀': `${operation}: before encryption`, params },
-    { depth: null }
-  )
-  const result = await next(params)
-  logger.dir(
-    { '👀': `${operation}: after decryption`, result },
-    { depth: null }
-  )
-  return result
-})
+const globalClient = new PrismaClient()
 
-client.$use(
-  fieldEncryptionMiddleware({
-    encryptionKey: TEST_ENCRYPTION_KEY,
-    dmmf: Prisma.dmmf
-  })
-)
+if (useMiddleware) {
+  globalClient.$use(fieldEncryptionMiddleware(config))
+}
 
-client.$use(async (params, next) => {
-  const operation = `${params.model}.${params.action}`
-  logger.dir(
-    { '👀': `${operation}: sent to database`, params },
-    { depth: null }
-  )
-  const result = await next(params)
-  logger.dir(
-    { '👀': `${operation}: received from database`, result },
-    { depth: null }
-  )
-  return result
-})
+const extendedClient = globalClient.$extends(
+  fieldEncryptionExtension(config)
+) as PrismaClient // <- Type annotation needed for internals only
+
+export const client = useExtensions ? extendedClient : globalClient
