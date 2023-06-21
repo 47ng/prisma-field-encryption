@@ -11,16 +11,15 @@ const config: Configuration = {
 }
 
 const useMiddleware = Boolean(process.env.USE_MIDDLEWARE)
-const useExtensions = Boolean(process.env.USE_EXTENSIONS)
 
 const globalClient = new PrismaClient()
-
-if (useMiddleware) {
-  globalClient.$use(fieldEncryptionMiddleware(config))
-}
 
 const extendedClient = globalClient.$extends(
   fieldEncryptionExtension(config)
 ) as PrismaClient // <- Type annotation needed for internals only
 
-export const client = useExtensions ? extendedClient : globalClient
+if (useMiddleware) {
+  globalClient.$use(fieldEncryptionMiddleware(config))
+}
+
+export const client = useMiddleware ? globalClient : extendedClient
