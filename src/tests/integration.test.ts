@@ -289,6 +289,18 @@ describe('integration', () => {
     expect(console.error).toHaveBeenLastCalledWith(
       errors.orderByUnsupported('User', 'name')
     )
+    // @ts-ignore
+    console.error.mockClear()
+    const testArraySyntax = () =>
+      client.user.findMany({
+        orderBy: [{ name: 'asc' }]
+      })
+    // Removing the name: asc properties leaves behind an empty
+    // array with an empty object, which is not supported by Prisma.
+    expect(testArraySyntax).rejects.toThrow()
+    expect(console.error).toHaveBeenLastCalledWith(
+      errors.orderByUnsupported('User', 'name')
+    )
     console.error = cer
   })
 

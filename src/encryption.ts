@@ -240,7 +240,7 @@ function rewriteWritePath(path: string, field: string, hashField: string) {
 function isOrderBy(path: string, field: string, value: string) {
   const items = path.split('.').reverse()
   return (
-    items[1] === 'orderBy' &&
+    items.includes('orderBy') &&
     items[0] === field &&
     ['asc', 'desc'].includes(value.toLowerCase())
   )
