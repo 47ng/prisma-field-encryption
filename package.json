@@ -54,7 +54,7 @@
     "zod": "^3.21.4"
   },
   "peerDependencies": {
-    "@prisma/client": "^3.8.0 || ^4"
+    "@prisma/client": "^4.7"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^17.6.5",
