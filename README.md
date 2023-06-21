@@ -11,12 +11,6 @@
 
 <p align="center">Transparent field-level encryption at rest for Prisma.</p>
 
-## Context
-
-[Demo repository](https://github.com/franky47/prisma-field-encryption-sandbox).
-
-See this [Twitter thread](https://twitter.com/fortysevenfx/status/1463265166682898438) for more information.
-
 ## Installation
 
 Using your package manager of choice:
@@ -455,6 +449,15 @@ PRs are welcome to support more field types, see the following issues for refere
 
 - [#11](https://github.com/47ng/prisma-field-encryption/issues/11) for JSON fields
 - [#26](https://github.com/47ng/prisma-field-encryption/issues/26) for Bytes fields
+
+### `orderBy`
+
+You cannot order by encrypted fields, even if they use a hash. While using a
+hash would keep identical records together, the order of said records would not
+match the expected order.
+
+For this reason, ordering can only be done post-decryption, at runtime, in your
+application code.
 
 ### Miscellaneous
 
