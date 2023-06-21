@@ -212,19 +212,17 @@ function rewriteHashedFieldPath(
   hashField: string
 ) {
   const items = path.split('.').reverse()
-  // Where clause
-  if (items.includes('where') && items[0] === field) {
-    items[0] = hashField
-    return items.reverse().join('.')
-  }
+  // Special case for `where field equals` clause
   if (items.includes('where') && items[1] === field && items[0] === 'equals') {
     items[1] = hashField
     return items.reverse().join('.')
   }
-  // Connect clause
-  if (items[1] === 'connect' && items[0] === field) {
-    items[0] = hashField
-    return items.reverse().join('.')
+  const clauses = ['where', 'connect', 'cursor']
+  for (const clause of clauses) {
+    if (items.includes(clause) && items[0] === field) {
+      items[0] = hashField
+      return items.reverse().join('.')
+    }
   }
   return null
 }

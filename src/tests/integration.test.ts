@@ -311,4 +311,14 @@ describe('integration', () => {
     expect(received.author?.name).toEqual('James Bond')
     expect(received.content).toEqual(content)
   })
+
+  test('cursor on hashed field', async () => {
+    const received = await client.user.findMany({
+      take: 1,
+      cursor: {
+        name: 'James Bond'
+      }
+    })
+    expect(received[0].name).toEqual('James Bond')
+  })
 })
