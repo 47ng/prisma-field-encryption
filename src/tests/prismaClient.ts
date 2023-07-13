@@ -10,16 +10,13 @@ const config: Configuration = {
   dmmf: Prisma.dmmf
 }
 
-const useMiddleware = Boolean(process.env.USE_MIDDLEWARE)
-
-const globalClient = new PrismaClient()
-
-const extendedClient = globalClient.$extends(
-  fieldEncryptionExtension(config)
-) as PrismaClient // <- Type annotation needed for internals only
-
-if (useMiddleware) {
-  globalClient.$use(fieldEncryptionMiddleware(config))
+export function makeMiddlewareClient() {
+  const client = new PrismaClient()
+  client.$use(fieldEncryptionMiddleware(config))
+  return client
 }
 
-export const client = useMiddleware ? globalClient : extendedClient
+export function makeExtensionClient() {
+  const client = new PrismaClient()
+  return client.$extends(fieldEncryptionExtension(config)) as PrismaClient
+}
