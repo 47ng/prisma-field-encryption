@@ -1,9 +1,23 @@
 import { cloakedStringRegex } from '@47ng/cloak'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { errors } from '../errors'
-import { client } from './prismaClient'
+import { makeExtensionClient, makeMiddlewareClient } from './prismaClient'
 import * as sqlite from './sqlite'
 
-describe('integration', () => {
+const clients = [
+  { type: 'middleware', client: makeMiddlewareClient() },
+  { type: 'extension', client: makeExtensionClient() }
+]
+
+describe.each(clients)('integration ($type)', ({ client }) => {
+  beforeAll(() => {
+    // Reset database
+    const src = path.resolve(process.cwd(), 'prisma', 'db.test.sqlite')
+    const dst = path.resolve(process.cwd(), 'prisma', 'db.integration.sqlite')
+    return fs.copyFile(src, dst)
+  })
+
   const email = '007@hmss.gov.uk'
 
   test('create user', async () => {
