@@ -1,18 +1,9 @@
+import { dmmf } from '@prisma/client'
+import { Prisma } from '@prisma/client/extension'
 import { debug } from './debugger'
 import { analyseDMMF } from './dmmf'
 import { configureKeys, decryptOnRead, encryptOnWrite } from './encryption'
 import { Configuration, MiddlewareParams } from './types'
-
-type AllOperationsArgs = {
-  model?: string
-  operation: string
-  args: any
-  query: (args: any) => Promise<any>
-}
-
-type CustomQuery = {
-  $allOperations(args: AllOperationsArgs): Promise<any>
-}
 
 export function fieldEncryptionExtension<
   Models extends string = any,
@@ -20,21 +11,14 @@ export function fieldEncryptionExtension<
 >(config: Configuration = {}) {
   const keys = configureKeys(config)
   debug.setup('Keys: %O', keys)
-  const models = analyseDMMF(
-    config.dmmf ?? require('@prisma/client').Prisma.dmmf
-  )
+  const models = analyseDMMF(config.dmmf ?? dmmf)
   debug.setup('Models: %O', models)
 
-  return {
+  return Prisma.defineExtension({
     name: 'prisma-field-encryption',
     query: {
       $allModels: {
-        async $allOperations({
-          model,
-          operation,
-          args,
-          query
-        }: AllOperationsArgs) {
+        async $allOperations({ model, operation, args, query }) {
           if (!model) {
             // Unsupported operation
             debug.runtime('Unsupported operation (missing model): %O', args)
@@ -59,5 +43,5 @@ export function fieldEncryptionExtension<
         }
       }
     }
-  }
+  })
 }
