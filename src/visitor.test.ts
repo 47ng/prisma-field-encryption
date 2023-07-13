@@ -1,4 +1,4 @@
-import { getDMMF } from '@prisma/sdk'
+import { getDMMF } from '@prisma/internals'
 import { analyseDMMF } from './dmmf'
 import type { MiddlewareParams } from './types'
 import { visitInputTargetFields } from './visitor'
