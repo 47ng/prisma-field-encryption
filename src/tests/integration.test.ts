@@ -274,7 +274,7 @@ describe('integration', () => {
   test('orderBy is not supported', async () => {
     const cer = console.error
     console.error = jest.fn()
-    const received = await client.user.findMany({
+    let received = await client.user.findMany({
       orderBy: {
         name: 'desc'
       }
@@ -291,13 +291,13 @@ describe('integration', () => {
     )
     // @ts-ignore
     console.error.mockClear()
-    const testArraySyntax = () =>
-      client.user.findMany({
-        orderBy: [{ name: 'asc' }]
-      })
-    // Removing the name: asc properties leaves behind an empty
-    // array with an empty object, which is not supported by Prisma.
-    expect(testArraySyntax).rejects.toThrow()
+    // Test array syntax
+    received = await client.user.findMany({
+      orderBy: [{ name: 'asc' }]
+    })
+    expect(received[0].name).toEqual('Alec Trevelyan')
+    expect(received[1].name).toEqual('James Bond')
+    expect(received[2].name).toEqual('Xenia Onatop')
     expect(console.error).toHaveBeenLastCalledWith(
       errors.orderByUnsupported('User', 'name')
     )
