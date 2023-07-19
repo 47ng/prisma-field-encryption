@@ -347,4 +347,53 @@ describe.each(clients)('integration ($type)', ({ client }) => {
     })
     expect(received[0].name).toEqual('James Bond')
   })
+
+  test('transactions', async () => {
+    const id = await client.$transaction(async tx => {
+      const post = await tx.post.create({
+        data: {
+          title: 'Mission orders',
+          author: {
+            connect: {
+              name: 'James Bond'
+            }
+          },
+          content: `This message will self-destruct in 5 seconds
+              (oops, wrong spy show)`
+        }
+      })
+      await tx.post.delete({ where: { id: post.id } })
+      return post.id
+    })
+    const post = await client.post.findUnique({ where: { id } })
+    expect(post).toBeNull()
+  })
+
+  test('transactions with rollback', async () => {
+    try {
+      await client.$transaction(async tx => {
+        const post = await tx.post.create({
+          data: {
+            title: 'Mission orders',
+            author: {
+              connect: {
+                name: 'James Bond'
+              }
+            },
+            content: `This message will self-destruct in 5 seconds
+              (oops, wrong spy show)`
+          }
+        })
+        // Simulate a transaction failure to test rollback
+        throw post.id
+      })
+    } catch (id) {
+      const post = await client.post.findUnique({ where: { id: id as number } })
+      expect(post).toBeNull()
+      return
+    }
+    // Should be unreacheable
+    const reached = true
+    expect(reached).toBe(false)
+  })
 })
