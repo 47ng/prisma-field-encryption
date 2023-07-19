@@ -21,7 +21,11 @@ export function fieldEncryptionExtension<
         async $allOperations({ model, operation, args, query }) {
           if (!model) {
             // Unsupported operation
-            debug.runtime('Unsupported operation (missing model): %O', args)
+            debug.runtime(
+              'Unsupported operation %s (missing model): %O',
+              operation,
+              args
+            )
             return await query(args)
           }
           const params: MiddlewareParams<Models, Actions> = {
