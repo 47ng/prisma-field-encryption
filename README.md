@@ -26,10 +26,10 @@ npm install prisma-field-encryption
 This extension requires Prisma 4.7.0 or higher.
 
 For Prisma versions 4.7.0 to 4.15.0, you will need to activate the
-`clientExtensions` preview feature.
+`clientExtensions` preview feature, or use the [middleware interface](#middleware-interface).
 
-For Prisma versions 4.16.0, client extensions are generally available and don't
-require a preview feature flag.
+For Prisma versions 4.16.0 and higher, client extensions are generally available
+and don't require a preview feature flag.
 
 > **Note**: The previous middleware interface is still available for Prisma
 > versions 3.8.0 to 4.6.x, but will be removed in a future update.
@@ -466,6 +466,29 @@ operations are not supported.
 
 Adding encryption adds overhead, both in storage space and in time to run queries,
 though its impact hasn't been measured yet.
+
+### Middleware interface
+
+> **Note**: Middlewares have been deprecated in Prisma 4.16.0 in favour of the
+> client extensions mechanism described above.
+> For retro-compatibility, we're providing a middleware interface until this
+> this feature is removed altogether from the Prisma client.
+
+```ts
+import { PrismaClient } from '@prisma/client'
+import { fieldEncryptionMiddleware } from 'prisma-field-encryption'
+
+export const client = new PrismaClient()
+
+client.$use(
+  // This is a function, don't forget to call it:
+  fieldEncryptionMiddleware()
+)
+```
+
+_Tip: place the middleware as low as you need cleartext data._
+
+_Any middleware registered after field encryption will receive encrypted data for the selected fields._
 
 ## How does this work ?
 
