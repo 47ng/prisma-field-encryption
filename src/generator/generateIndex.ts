@@ -7,9 +7,11 @@ export interface GenerateIndexArgs {
   prismaClientModule: string
   outputDir: string
   modelNamePad: number
+  concurrently: boolean
 }
 
 export async function generateIndex({
+  concurrently,
   models,
   outputDir,
   modelNamePad,
@@ -61,7 +63,7 @@ ${Object.keys(models)
 }
 
 /**
- * Migrate models concurrently.
+ * Migrate models ${concurrently ? 'concurrently' : 'sequentially'}.
  *
  * Processed models:
 ${Object.keys(models)
@@ -74,7 +76,9 @@ export async function migrate(
   client: PrismaClient,
   reportProgress: ProgressReportCallback = defaultProgressReport
 ): Promise<MigrationReport> {
-  const [
+${
+  concurrently
+    ? `  const [
 ${Object.keys(models)
   .map(modelName => `    processed${modelName}`)
   .join(',\n')}
@@ -82,7 +86,14 @@ ${Object.keys(models)
 ${Object.keys(models)
   .map(modelName => `    migrate${modelName}(client, reportProgress)`)
   .join(',\n')}
-  ])
+  ])`
+    : Object.keys(models)
+        .map(
+          modelName =>
+            `  const processed${modelName} = await migrate${modelName}(client, reportProgress)`
+        )
+        .join('\n')
+}
   return {
 ${Object.keys(models)
   .map(modelName => `    ${modelName}: processed${modelName}`)
