@@ -1,8 +1,8 @@
-// @ts-ignore
 import { migrate } from './migrations'
-import { client } from './prismaClient'
+import { makeExtensionClient } from './prismaClient'
 
 async function main() {
+  const client = makeExtensionClient()
   await Promise.all([
     client.user.create({
       data: {
