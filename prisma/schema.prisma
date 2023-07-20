@@ -8,10 +8,11 @@ generator client {
   output   = "../src/tests/.generated/client"
 }
 
-// generator fieldEncryptionMigrations {
-//   provider = "prisma-field-encryption"
-//   output   = "../src/tests/migrations"
-// }
+generator fieldEncryptionMigrations {
+  provider     = "prisma-field-encryption"
+  output       = "../src/tests/migrations"
+  concurrently = true
+}
 
 model User {
   id           Int     @id @default(autoincrement())

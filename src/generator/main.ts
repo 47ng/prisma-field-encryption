@@ -4,11 +4,12 @@ import { generatorHandler } from '@prisma/generator-helper'
 import fs from 'node:fs/promises'
 import path from 'path/posix'
 import { analyseDMMF } from '../dmmf'
-import { errors } from '../errors'
 import { generateIndex } from './generateIndex'
 import { generateModel } from './generateModel'
 
-export interface Config {}
+export interface Config {
+  concurrently?: boolean
+}
 
 generatorHandler({
   onManifest() {
@@ -22,6 +23,7 @@ generatorHandler({
   async onGenerate(options) {
     const models = analyseDMMF(options.dmmf)
     const outputDir = options.generator.output?.value!
+    const concurrently = options.generator.config?.concurrently === 'true'
     const prismaClient = options.otherGenerators.find(
       each => each.provider.value === 'prisma-client-js'
     )!
@@ -63,6 +65,7 @@ generatorHandler({
       )
     )
     await generateIndex({
+      concurrently,
       models: validModels,
       outputDir,
       prismaClientModule,

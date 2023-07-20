@@ -250,8 +250,13 @@ generator client {
 }
 
 generator fieldEncryptionMigrations {
-  provider = "prisma-field-encryption"
-  output   = "./where/you/want/your/migrations"
+  provider     = "prisma-field-encryption"
+  output       = "./where/you/want/your/migrations"
+
+  // Optionally opt-in to concurrent model migration.
+  // Since this can cause timeouts and performance issues,
+  // it's off by default, and models are updated sequentially.
+  concurrently = true
 }
 ```
 
