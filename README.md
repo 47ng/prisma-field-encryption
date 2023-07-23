@@ -279,6 +279,23 @@ export async function migrate(
 The progress report callback is optional, and will log progress to the console
 if ommitted.
 
+> **Note**: when using an extended client, you'll need to do an explicit cast
+> to call the `migrate` function, like so:
+>
+> ```ts
+> // Import from your generated client location, not @prisma/client
+> import { PrismaClient } from '.prisma/client' // or custom path
+> import { migrate } from './where/you/want/your/migrations'
+> import { fieldEncryptionExtension } from 'prisma-field-encryption'
+>
+> const client = new PrismaClient().$extends(fieldEncryptionExtension())
+>
+> // Explicit cast needed here ↴
+> await migrate(client as PrismaClient)
+> ```
+>
+> See issue [prisma/prisma#20326](https://github.com/prisma/prisma/issues/20326).
+
 ### Following migrations progress
 
 A progress report is an object with the following fields:
