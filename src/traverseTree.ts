@@ -32,7 +32,7 @@ export function traverseTree<State>(
     state: State
   }
 
-  const stack: StackItem[] = [
+  let stack: StackItem[] = [
     {
       path: [],
       type: typeOf(input),
@@ -42,7 +42,7 @@ export function traverseTree<State>(
   ]
 
   while (stack.length > 0) {
-    const { state, ...item } = stack.shift()!
+    const { state, ...item } = stack.pop()!
     const newState = callback(state, item)
     if (!isCollection(item.node)) {
       continue
@@ -56,7 +56,7 @@ export function traverseTree<State>(
         state: newState
       })
     )
-    stack.unshift(...children)
+    stack = [...stack, ...children.reverse()]
   }
 }
 
