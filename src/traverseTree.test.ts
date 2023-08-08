@@ -359,9 +359,15 @@ describe('traverseTree', () => {
     ])
   })
 
+  const leaf = (index: number) => ({
+    hello: 'world',
+    index
+  })
+  const array = Array.from({ length: 1_000_000 }, (_, i) => leaf(i))
+
   test('root node is an array with 1 million rows', () => {
     const visitor = jest.fn().mockImplementation(state => state)
-    traverseTree(Array.from(Array(1000000).keys()), visitor, null)
-    expect(visitor).toHaveBeenCalledTimes(1000001)
+    traverseTree(array, visitor, null)
+    expect(visitor).toHaveBeenCalledTimes(3000001)
   })
 })
