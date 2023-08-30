@@ -396,4 +396,10 @@ describe.each(clients)('integration ($type)', ({ client }) => {
     const reached = true
     expect(reached).toBe(false)
   })
+  test("Doesn't work with the Fluent API", async () => {
+    const posts = await client.user.findUnique({ where: { email } }).posts()
+    for (const post of posts!) {
+      expect(post.content).toMatch(cloakedStringRegex)
+    }
+  })
 })
