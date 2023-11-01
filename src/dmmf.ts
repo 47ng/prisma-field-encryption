@@ -26,7 +26,7 @@ export interface DMMFModelDescriptor {
 
 export type DMMFModels = Record<string, DMMFModelDescriptor> // key: model name
 
-const supportedCursorTypes = ['Int', 'String']
+const supportedCursorTypes = ['Int', 'String', 'BigInt']
 
 export function analyseDMMF(input: DMMFDocument): DMMFModels {
   const dmmf = dmmfDocumentParser.parse(input)
@@ -40,8 +40,8 @@ export function analyseDMMF(input: DMMFDocument): DMMFModels {
       field =>
         field.isUnique && supportedCursorTypes.includes(String(field.type))
     )
-    const cursorField = model.fields.find(field =>
-      field.documentation?.includes('@encryption:cursor')
+    const cursorField = model.fields.find(
+      field => field.documentation?.includes('@encryption:cursor')
     )
     if (cursorField) {
       // Make sure custom cursor field is valid
