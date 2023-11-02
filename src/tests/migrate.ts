@@ -27,6 +27,13 @@ async function main() {
         email: `spam+${Date.now()}@example.com`,
         name: `Spam ${Date.now()}`
       }
+    }),
+    client.bigIntCursorTest.create({
+      data: {
+        id: 1,
+        key: 'Answer to life, universe and everything',
+        value: 42
+      }
     })
   ])
   await migrate(client)

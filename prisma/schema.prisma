@@ -41,3 +41,9 @@ model Category {
   name  String
   posts Post[]
 }
+
+model BigIntCursorTest {
+  id    BigInt @id
+  key   String /// @encrypted
+  value Int
+}
