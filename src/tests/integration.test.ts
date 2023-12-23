@@ -392,14 +392,32 @@ describe.each(clients)('integration ($type)', ({ client }) => {
       expect(post).toBeNull()
       return
     }
-    // Should be unreacheable
+    // Should be unreachable
     const reached = true
     expect(reached).toBe(false)
   })
+
   test("Doesn't work with the Fluent API", async () => {
     const posts = await client.user.findUnique({ where: { email } }).posts()
     for (const post of posts!) {
       expect(post.content).toMatch(cloakedStringRegex)
     }
+  })
+
+  test("query entries with non-empty name", async () => {
+    const fakeName = 'f@keU$er'
+    await client.user.create({
+       data: {
+         name: '',
+         email: 'test_mail@example.com'
+      }
+    });
+    const users = await client.user.findMany();
+    // assume active user with nonempty name
+    const activeUserCount = await client.user.count({ where: { name: { not: '' } } })
+    // use fakeName to pretend unique name
+    const existingUsers = await client.user.findMany({ where: { name: { not: fakeName } } })
+    expect(activeUserCount).toBe(users.length - 1);
+    expect(existingUsers).toEqual(users);
   })
 })

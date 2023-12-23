@@ -84,7 +84,7 @@ export function visitInputTargetFields<
 ) {
   traverseTree(
     params.args,
-    makeVisitor(models, visitor, ['equals', 'set'], debug.encryption),
+    makeVisitor(models, visitor, ['equals', 'set', 'not'], debug.encryption),
     {
       currentModel: params.model!
     }
