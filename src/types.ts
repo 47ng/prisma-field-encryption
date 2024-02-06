@@ -32,25 +32,33 @@ export type Middleware<
   next: (params: MiddlewareParams<Models, Actions>) => Promise<Result>
 ) => Promise<Result>
 
-const dmmfFieldParser = z.object({
-  name: z.string(),
-  isList: z.boolean(),
-  isUnique: z.boolean(),
-  isId: z.boolean(),
-  type: z.any(),
-  documentation: z.string().optional()
-})
-
-const dmmfModelParser = z.object({
-  name: z.string(),
-  fields: z.array(dmmfFieldParser)
-})
-
-export const dmmfDocumentParser = z.object({
-  datamodel: z.object({
-    models: z.array(dmmfModelParser)
+const dmmfFieldParser = z
+  .object({
+    name: z.string(),
+    isList: z.boolean(),
+    isUnique: z.boolean(),
+    isId: z.boolean(),
+    type: z.any(),
+    documentation: z.string().optional()
   })
-})
+  .readonly()
+
+const dmmfModelParser = z
+  .object({
+    name: z.string(),
+    fields: z.array(dmmfFieldParser).readonly()
+  })
+  .readonly()
+
+export const dmmfDocumentParser = z
+  .object({
+    datamodel: z
+      .object({
+        models: z.array(dmmfModelParser).readonly()
+      })
+      .readonly()
+  })
+  .readonly()
 
 export type DMMFModel = z.TypeOf<typeof dmmfModelParser>
 export type DMMFField = z.TypeOf<typeof dmmfFieldParser>
@@ -61,7 +69,7 @@ export type DMMFDocument = z.TypeOf<typeof dmmfDocumentParser>
 export interface Configuration {
   encryptionKey?: string
   decryptionKeys?: string[]
-  dmmf?: DMMFDocument
+  dmmf?: Readonly<DMMFDocument>
 }
 
 export type HashFieldConfiguration = {
