@@ -54,7 +54,8 @@ export const dmmfDocumentParser = z
   .object({
     datamodel: z
       .object({
-        models: z.array(dmmfModelParser).readonly()
+        models: z.array(dmmfModelParser).readonly(),
+        types:  z.array(dmmfModelParser).readonly()
       })
       .readonly()
   })
