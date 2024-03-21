@@ -30,7 +30,7 @@ const supportedCursorTypes = ['Int', 'String', 'BigInt']
 
 export function analyseDMMF(input: DMMFDocument): DMMFModels {
   const dmmf = dmmfDocumentParser.parse(input)
-  const allModels = dmmf.datamodel.models
+  const allModels = [...dmmf.datamodel.models, ...dmmf.datamodel.types];
 
   return allModels.reduce<DMMFModels>((output, model) => {
     const idField = model.fields.find(
