@@ -177,6 +177,9 @@ export function decryptOnRead<Models extends string, Actions extends string>(
     }) {
       try {
         if (!cloakedStringRegex.test(cipherText)) {
+          if (fieldConfig.strictDecryption) {
+            throw new Error('Value is not encrypted and mode=strict')
+          }
           return
         }
         const decryptionKey = findKeyForMessage(cipherText, keys.keychain)
