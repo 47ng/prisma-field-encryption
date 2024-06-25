@@ -257,6 +257,8 @@ You can also combine the sanitize options:
 /// @encryption:hash(email)?sanitize=lowercase&sanitize=trim&sanitize=trim&sanitize=diacritics
 ```
 
+> Be aware: Using the sanitize hash feature in combination with `unique` could cause conflicts. Example: Users with the name `François` and `francois` result in the same hash which could result in a database conflict.
+
 ## Migrations
 
 Adding encryption to an existing field is a transparent operation: Prisma will
