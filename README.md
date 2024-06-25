@@ -235,6 +235,28 @@ rainbow table attacks. There are multiple ways to do so, listed by order of prec
 
 The salt should be of the same encoding as the associated data to hash.
 
+### Sanitize hash
+
+> _Support: introduced in version 1.6.0_
+
+You can sanitize a hash before creation and querying. This might be useful in case you would like to find a User with the name of `François ` with a query input of `francois`.
+
+There are several sanitize options:
+
+```
+/// @encryption:hash(email)?sanitize=lowercase  <- lowercase hash
+/// @encryption:hash(email)?sanitize=uppercase  <- uppercase hash
+/// @encryption:hash(email)?sanitize=trim       <- trim start and end of hash
+/// @encryption:hash(email)?sanitize=spaces     <- remove spaces in hash
+/// @encryption:hash(email)?sanitize=diacritics <- remove diacritics like ç or é in hash
+```
+
+You can also combine the sanitize options:
+
+```
+/// @encryption:hash(email)?sanitize=lowercase&sanitize=trim&sanitize=trim&sanitize=diacritics
+```
+
 ## Migrations
 
 Adding encryption to an existing field is a transparent operation: Prisma will

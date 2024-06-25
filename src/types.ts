@@ -79,6 +79,15 @@ export type HashFieldConfiguration = {
   salt?: string
   inputEncoding: Encoding
   outputEncoding: Encoding
+  sanitize?: HashFieldSanitizeOptions[]
+}
+
+export enum HashFieldSanitizeOptions {
+  lowercase = 'lowercase',
+  uppercase = 'uppercase',
+  trim = 'trim',
+  spaces = 'spaces',
+  diacritics = 'diacritics'
 }
 
 export interface FieldConfiguration {

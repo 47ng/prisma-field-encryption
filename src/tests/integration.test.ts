@@ -404,20 +404,53 @@ describe.each(clients)('integration ($type)', ({ client }) => {
     }
   })
 
-  test("query entries with non-empty name", async () => {
+  test('query entries with non-empty name', async () => {
     const fakeName = 'f@keU$er'
     await client.user.create({
-       data: {
-         name: '',
-         email: 'test_mail@example.com'
+      data: {
+        name: '',
+        email: 'test_mail@example.com'
       }
-    });
-    const users = await client.user.findMany();
+    })
+    const users = await client.user.findMany()
     // assume active user with nonempty name
-    const activeUserCount = await client.user.count({ where: { name: { not: '' } } })
+    const activeUserCount = await client.user.count({
+      where: { name: { not: '' } }
+    })
     // use fakeName to pretend unique name
-    const existingUsers = await client.user.findMany({ where: { name: { not: fakeName } } })
-    expect(activeUserCount).toBe(users.length - 1);
-    expect(existingUsers).toEqual(users);
+    const existingUsers = await client.user.findMany({
+      where: { name: { not: fakeName } }
+    })
+    expect(activeUserCount).toBe(users.length - 1)
+    expect(existingUsers).toEqual(users)
+  })
+
+  const sanitizeTestEmail = 'sanitize@example.com'
+
+  test('create user with sanitizable name', async () => {
+    const received = await client.user.create({
+      data: {
+        email: sanitizeTestEmail,
+        name: ' François'
+      }
+    })
+    const dbValue = await sqlite.get({
+      table: 'User',
+      where: { email: sanitizeTestEmail }
+    })
+    expect(received.name).toEqual(' François') // clear text in returned value
+    expect(dbValue.name).toMatch(cloakedStringRegex) // encrypted in database
+  })
+
+  test('query user by encrypted and hashed name field with a sanitized input (with equals)', async () => {
+    const received = await client.user.findFirst({
+      where: {
+        name: {
+          equals: 'Francois' //check for lowercase, trim and diacritics
+        }
+      }
+    })
+    expect(received!.name).toEqual(' François') // clear text in returned value
+    expect(received!.email).toEqual(sanitizeTestEmail)
   })
 })
