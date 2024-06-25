@@ -257,6 +257,8 @@ You can also combine the normalize options:
 /// @encryption:hash(email)?normalize=lowercase&normalize=trim&normalize=trim&normalize=diacritics
 ```
 
+> Be aware: You should only use the normalize hash feature in combination with a `utf8` input encodnig. It would not make sense to normalize a `hex` or `base64` string.
+
 > Be aware: Using the normalize hash feature in combination with `unique` could cause conflicts. Example: Users with the name `François` and `francois` result in the same hash which could result in a database conflict.
 
 ## Migrations

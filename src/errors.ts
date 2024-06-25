@@ -113,9 +113,15 @@ export const warnings = {
   unsupportedNormalize: (
     model: string,
     field: string,
-    normalize: string,
-    io: string
-  ) => `${warning}: unsupported ${io} normalize \`${normalize}\` for hash field ${model}.${field}
+    normalize: string
+  ) => `${warning}: unsupported normalize \`${normalize}\` for hash field ${model}.${field}
   -> Valid values are ${Object.values(HashFieldNormalizeOptions)}
+`,
+  unsupportedNormalizeEncoding: (
+    model: string,
+    field: string,
+    inputEncoding: string
+  ) => `${warning}: unsupported normalize flag on field with encoding \`${inputEncoding}\` for hash field ${model}.${field}
+-> Valid inputEncoding values for normalize are [utf8]
 `
 }

@@ -218,8 +218,18 @@ export function parseHashAnnotation(
     model &&
     field
   ) {
+    console.warn(warnings.unsupportedNormalize(model, field, normalize))
+  }
+
+  if (
+    normalize.length > 0 &&
+    inputEncoding !== 'utf8' &&
+    process.env.NODE_ENV === 'development' &&
+    model &&
+    field
+  ) {
     console.warn(
-      warnings.unsupportedNormalize(model, field, normalize, 'output')
+      warnings.unsupportedNormalizeEncoding(model, field, inputEncoding)
     )
   }
 
