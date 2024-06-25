@@ -425,24 +425,24 @@ describe.each(clients)('integration ($type)', ({ client }) => {
     expect(existingUsers).toEqual(users)
   })
 
-  const sanitizeTestEmail = 'sanitize@example.com'
+  const normalizeTestEmail = 'normalize@example.com'
 
-  test('create user with sanitizable name', async () => {
+  test('create user with normalizeable name', async () => {
     const received = await client.user.create({
       data: {
-        email: sanitizeTestEmail,
+        email: normalizeTestEmail,
         name: ' François'
       }
     })
     const dbValue = await sqlite.get({
       table: 'User',
-      where: { email: sanitizeTestEmail }
+      where: { email: normalizeTestEmail }
     })
     expect(received.name).toEqual(' François') // clear text in returned value
     expect(dbValue.name).toMatch(cloakedStringRegex) // encrypted in database
   })
 
-  test('query user by encrypted and hashed name field with a sanitized input (with equals)', async () => {
+  test('query user by encrypted and hashed name field with a normalized input (with equals)', async () => {
     const received = await client.user.findFirst({
       where: {
         name: {
@@ -451,6 +451,6 @@ describe.each(clients)('integration ($type)', ({ client }) => {
       }
     })
     expect(received!.name).toEqual(' François') // clear text in returned value
-    expect(received!.email).toEqual(sanitizeTestEmail)
+    expect(received!.email).toEqual(normalizeTestEmail)
   })
 })

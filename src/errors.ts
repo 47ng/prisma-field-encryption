@@ -1,6 +1,6 @@
 import { namespace } from './debugger'
 import {
-  HashFieldSanitizeOptions,
+  HashFieldNormalizeOptions,
   type DMMFField,
   type DMMFModel
 } from './types'
@@ -110,12 +110,12 @@ export const warnings = {
   ) => `${warning}: unsupported ${io} encoding \`${encoding}\` for hash field ${model}.${field}
   -> Valid values are utf8, base64, hex
 `,
-  unsupportedSanitize: (
+  unsupportedNormalize: (
     model: string,
     field: string,
-    sanitize: string,
+    normalize: string,
     io: string
-  ) => `${warning}: unsupported ${io} sanitize \`${sanitize}\` for hash field ${model}.${field}
-  -> Valid values are ${Object.values(HashFieldSanitizeOptions)}
+  ) => `${warning}: unsupported ${io} normalize \`${normalize}\` for hash field ${model}.${field}
+  -> Valid values are ${Object.values(HashFieldNormalizeOptions)}
 `
 }

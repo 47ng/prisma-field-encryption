@@ -4,7 +4,7 @@ import {
   DMMFDocument,
   FieldConfiguration,
   HashFieldConfiguration,
-  HashFieldSanitizeOptions,
+  HashFieldNormalizeOptions,
   dmmfDocumentParser
 } from './types'
 
@@ -209,16 +209,18 @@ export function parseHashAnnotation(
       ? process.env[saltEnv]
       : process.env.PRISMA_FIELD_ENCRYPTION_HASH_SALT)
 
-  const sanitize =
-    (query.getAll('sanitize') as HashFieldSanitizeOptions[]) ?? []
-  console.log(sanitize)
+  const normalize =
+    (query.getAll('normalize') as HashFieldNormalizeOptions[]) ?? []
+
   if (
-    !isValidSanitizeOptions(sanitize) &&
+    !isValidNormalizeOptions(normalize) &&
     process.env.NODE_ENV === 'development' &&
     model &&
     field
   ) {
-    console.warn(warnings.unsupportedSanitize(model, field, sanitize, 'output'))
+    console.warn(
+      warnings.unsupportedNormalize(model, field, normalize, 'output')
+    )
   }
 
   return {
@@ -228,7 +230,7 @@ export function parseHashAnnotation(
     salt,
     inputEncoding,
     outputEncoding,
-    sanitize
+    normalize
   }
 }
 
@@ -236,8 +238,8 @@ function isValidEncoding(encoding: string): encoding is Encoding {
   return ['hex', 'base64', 'utf8'].includes(encoding)
 }
 
-function isValidSanitizeOptions(
+function isValidNormalizeOptions(
   options: string[]
-): options is HashFieldSanitizeOptions[] {
-  return options.every(option => option in HashFieldSanitizeOptions)
+): options is HashFieldNormalizeOptions[] {
+  return options.every(option => option in HashFieldNormalizeOptions)
 }

@@ -235,29 +235,29 @@ rainbow table attacks. There are multiple ways to do so, listed by order of prec
 
 The salt should be of the same encoding as the associated data to hash.
 
-### Sanitize hash
+### Normalize hash
 
 > _Support: introduced in version 1.6.0_
 
-You can sanitize a hash before creation and querying. This might be useful in case you would like to find a User with the name of `François ` with a query input of `francois`.
+You can normalize a hash before creation and querying. This might be useful in case you would like to find a User with the name of `François ` with a query input of `francois`.
 
-There are several sanitize options:
-
-```
-/// @encryption:hash(email)?sanitize=lowercase  <- lowercase hash
-/// @encryption:hash(email)?sanitize=uppercase  <- uppercase hash
-/// @encryption:hash(email)?sanitize=trim       <- trim start and end of hash
-/// @encryption:hash(email)?sanitize=spaces     <- remove spaces in hash
-/// @encryption:hash(email)?sanitize=diacritics <- remove diacritics like ç or é in hash
-```
-
-You can also combine the sanitize options:
+There are several normalize options:
 
 ```
-/// @encryption:hash(email)?sanitize=lowercase&sanitize=trim&sanitize=trim&sanitize=diacritics
+/// @encryption:hash(email)?normalize=lowercase  <- lowercase hash
+/// @encryption:hash(email)?normalize=uppercase  <- uppercase hash
+/// @encryption:hash(email)?normalize=trim       <- trim start and end of hash
+/// @encryption:hash(email)?normalize=spaces     <- remove spaces in hash
+/// @encryption:hash(email)?normalize=diacritics <- remove diacritics like ç or é in hash
 ```
 
-> Be aware: Using the sanitize hash feature in combination with `unique` could cause conflicts. Example: Users with the name `François` and `francois` result in the same hash which could result in a database conflict.
+You can also combine the normalize options:
+
+```
+/// @encryption:hash(email)?normalize=lowercase&normalize=trim&normalize=trim&normalize=diacritics
+```
+
+> Be aware: Using the normalize hash feature in combination with `unique` could cause conflicts. Example: Users with the name `François` and `francois` result in the same hash which could result in a database conflict.
 
 ## Migrations
 

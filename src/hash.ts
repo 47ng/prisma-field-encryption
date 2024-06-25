@@ -1,6 +1,6 @@
 import { decoders, encoders } from '@47ng/codec'
 import crypto from 'node:crypto'
-import { HashFieldConfiguration, HashFieldSanitizeOptions } from './types'
+import { HashFieldConfiguration, HashFieldNormalizeOptions } from './types'
 
 export function hashString(
   input: string,
@@ -8,9 +8,9 @@ export function hashString(
 ) {
   const decode = decoders[config.inputEncoding]
   const encode = encoders[config.outputEncoding]
-  const sanitized = sanitizeHashString(input, config.sanitize)
+  const normalized = normalizeHashString(input, config.normalize)
 
-  const data = decode(sanitized)
+  const data = decode(normalized)
   const hash = crypto.createHash(config.algorithm)
   hash.update(data)
   if (config.salt) {
@@ -19,24 +19,24 @@ export function hashString(
   return encode(hash.digest())
 }
 
-export function sanitizeHashString(
+export function normalizeHashString(
   input: string,
-  options: HashFieldSanitizeOptions[] = []
+  options: HashFieldNormalizeOptions[] = []
 ) {
   let output = input
-  if (options.includes(HashFieldSanitizeOptions.lowercase)) {
+  if (options.includes(HashFieldNormalizeOptions.lowercase)) {
     output = output.toLowerCase()
   }
-  if (options.includes(HashFieldSanitizeOptions.uppercase)) {
+  if (options.includes(HashFieldNormalizeOptions.uppercase)) {
     output = output.toUpperCase()
   }
-  if (options.includes(HashFieldSanitizeOptions.trim)) {
+  if (options.includes(HashFieldNormalizeOptions.trim)) {
     output = output.trim()
   }
-  if (options.includes(HashFieldSanitizeOptions.spaces)) {
+  if (options.includes(HashFieldNormalizeOptions.spaces)) {
     output = output.replace(/\s/g, '')
   }
-  if (options.includes(HashFieldSanitizeOptions.diacritics)) {
+  if (options.includes(HashFieldNormalizeOptions.diacritics)) {
     output = output.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   }
   return output
