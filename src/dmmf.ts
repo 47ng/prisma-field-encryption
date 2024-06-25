@@ -2,9 +2,10 @@ import type { Encoding } from '@47ng/codec'
 import { errors, warnings } from './errors'
 import {
   DMMFDocument,
-  dmmfDocumentParser,
   FieldConfiguration,
-  HashFieldConfiguration
+  HashFieldConfiguration,
+  HashFieldNormalizeOptions,
+  dmmfDocumentParser
 } from './types'
 
 export interface ConnectionDescriptor {
@@ -40,8 +41,8 @@ export function analyseDMMF(input: DMMFDocument): DMMFModels {
       field =>
         field.isUnique && supportedCursorTypes.includes(String(field.type))
     )
-    const cursorField = model.fields.find(
-      field => field.documentation?.includes('@encryption:cursor')
+    const cursorField = model.fields.find(field =>
+      field.documentation?.includes('@encryption:cursor')
     )
     if (cursorField) {
       // Make sure custom cursor field is valid
@@ -208,16 +209,47 @@ export function parseHashAnnotation(
       ? process.env[saltEnv]
       : process.env.PRISMA_FIELD_ENCRYPTION_HASH_SALT)
 
+  const normalize =
+    (query.getAll('normalize') as HashFieldNormalizeOptions[]) ?? []
+
+  if (
+    !isValidNormalizeOptions(normalize) &&
+    process.env.NODE_ENV === 'development' &&
+    model &&
+    field
+  ) {
+    console.warn(warnings.unsupportedNormalize(model, field, normalize))
+  }
+
+  if (
+    normalize.length > 0 &&
+    inputEncoding !== 'utf8' &&
+    process.env.NODE_ENV === 'development' &&
+    model &&
+    field
+  ) {
+    console.warn(
+      warnings.unsupportedNormalizeEncoding(model, field, inputEncoding)
+    )
+  }
+
   return {
     sourceField: match.groups.fieldName,
     targetField: field ?? match.groups.fieldName + 'Hash',
     algorithm: query.get('algorithm') ?? 'sha256',
     salt,
     inputEncoding,
-    outputEncoding
+    outputEncoding,
+    normalize
   }
 }
 
 function isValidEncoding(encoding: string): encoding is Encoding {
   return ['hex', 'base64', 'utf8'].includes(encoding)
+}
+
+function isValidNormalizeOptions(
+  options: string[]
+): options is HashFieldNormalizeOptions[] {
+  return options.every(option => option in HashFieldNormalizeOptions)
 }

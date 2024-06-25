@@ -235,6 +235,32 @@ rainbow table attacks. There are multiple ways to do so, listed by order of prec
 
 The salt should be of the same encoding as the associated data to hash.
 
+### Normalize hash
+
+> _Support: introduced in version 1.6.0_
+
+You can normalize a hash before creation and querying. This might be useful in case you would like to find a User with the name of `François ` with a query input of `francois`.
+
+There are several normalize options:
+
+```
+/// @encryption:hash(email)?normalize=lowercase  <- lowercase hash
+/// @encryption:hash(email)?normalize=uppercase  <- uppercase hash
+/// @encryption:hash(email)?normalize=trim       <- trim start and end of hash
+/// @encryption:hash(email)?normalize=spaces     <- remove spaces in hash
+/// @encryption:hash(email)?normalize=diacritics <- remove diacritics like ç or é in hash
+```
+
+You can also combine the normalize options:
+
+```
+/// @encryption:hash(email)?normalize=lowercase&normalize=trim&normalize=trim&normalize=diacritics
+```
+
+> Be aware: You should only use the normalize hash feature in combination with a `utf8` input encodnig. It would not make sense to normalize a `hex` or `base64` string.
+
+> Be aware: Using the normalize hash feature in combination with `unique` could cause conflicts. Example: Users with the name `François` and `francois` result in the same hash which could result in a database conflict.
+
 ## Migrations
 
 Adding encryption to an existing field is a transparent operation: Prisma will

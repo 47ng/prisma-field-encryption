@@ -5,6 +5,7 @@ import {
   parseEncryptedAnnotation,
   parseHashAnnotation
 } from './dmmf'
+import { HashFieldNormalizeOptions } from './types'
 
 describe('dmmf', () => {
   describe('parseEncryptedAnnotation', () => {
@@ -120,7 +121,7 @@ describe('dmmf', () => {
           id           Int     @id @default(autoincrement())
           email        String  @unique
           name         String? /// @encrypted
-          nameHash     String? /// @encryption:hash(name)
+          nameHash     String? /// @encryption:hash(name)?normalize=lowercase
           posts        Post[]
           pinnedPost   Post?   @relation(fields: [pinnedPostId], references: [id], name: "pinnedPost")
           pinnedPostId Int?
@@ -162,7 +163,8 @@ describe('dmmf', () => {
               targetField: 'nameHash',
               algorithm: 'sha256',
               inputEncoding: 'utf8',
-              outputEncoding: 'hex'
+              outputEncoding: 'hex',
+              normalize: [HashFieldNormalizeOptions.lowercase]
             }
           }
         },

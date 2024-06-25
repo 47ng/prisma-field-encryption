@@ -1,5 +1,9 @@
 import { namespace } from './debugger'
-import type { DMMFField, DMMFModel } from './types'
+import {
+  HashFieldNormalizeOptions,
+  type DMMFField,
+  type DMMFModel
+} from './types'
 
 const error = `[${namespace}] Error`
 const warning = `[${namespace}] Warning`
@@ -105,5 +109,19 @@ export const warnings = {
     io: string
   ) => `${warning}: unsupported ${io} encoding \`${encoding}\` for hash field ${model}.${field}
   -> Valid values are utf8, base64, hex
+`,
+  unsupportedNormalize: (
+    model: string,
+    field: string,
+    normalize: string
+  ) => `${warning}: unsupported normalize \`${normalize}\` for hash field ${model}.${field}
+  -> Valid values are ${Object.values(HashFieldNormalizeOptions)}
+`,
+  unsupportedNormalizeEncoding: (
+    model: string,
+    field: string,
+    inputEncoding: string
+  ) => `${warning}: unsupported normalize flag on field with encoding \`${inputEncoding}\` for hash field ${model}.${field}
+-> Valid inputEncoding values for normalize are [utf8]
 `
 }
