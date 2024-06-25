@@ -42,7 +42,7 @@ jobs:
           yarn test:coverage:merge
           yarn test:coverage:report
 
-      - uses: coverallsapp/github-action@95b1a2355bd0e526ad2fd62da9fd386ad4c98474
+      - uses: coverallsapp/github-action@643bc377ffa44ace6394b2b5d0d3950076de9f63
         name: Report code coverage
         continue-on-error: true
         with:
