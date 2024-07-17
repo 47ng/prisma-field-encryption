@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@47ng/cloak": "^1.1.0",
+    "@47ng/codec": "^1.1.0",
     "@prisma/generator-helper": "^5.17.0",
     "debug": "^4.3.5",
     "immer": "^10.1.1",
