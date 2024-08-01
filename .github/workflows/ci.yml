@@ -21,7 +21,7 @@ jobs:
         name: Get Yarn cache path
         run: echo "::set-output name=dir::$(yarn cache dir)"
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b
         with:
           node-version: lts/*
       - uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
