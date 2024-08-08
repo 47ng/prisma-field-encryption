@@ -453,4 +453,25 @@ describe.each(clients)('integration ($type)', ({ client }) => {
     expect(received!.name).toEqual(' François') // clear text in returned value
     expect(received!.email).toEqual(normalizeTestEmail)
   })
+
+  test('query entries in list', async () => {
+    await client.user.create({
+      data: {
+        name: 'Test User 1',
+        email: 'test_user_in_1@example.com'
+      }
+    })
+    await client.user.create({
+      data: {
+        name: 'Test User 2',
+        email: 'test_user_in_2@example.com'
+      }
+    })
+
+    const foundUserCount = await client.user.count({
+      where: { name: { in: ['Test User 1', 'Test User 2'] } }
+    })
+
+    expect(foundUserCount).toBe(2)
+  })
 })
