@@ -1,4 +1,5 @@
 import { cloakedStringRegex } from '@47ng/cloak'
+import { createHash } from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { errors } from '../errors'
@@ -453,4 +454,36 @@ describe.each(clients)('integration ($type)', ({ client }) => {
     expect(received!.name).toEqual(' François') // clear text in returned value
     expect(received!.email).toEqual(normalizeTestEmail)
   })
+
+  test('query field with 4 MiB+ data', async () => {
+    const longNameUser = {
+      name: 'a'.repeat(4_194_304),
+      email: 'mr-4MiB-name@example.test'
+    } as const
+    await client.user.upsert({
+      where: {
+        email: longNameUser.email
+      },
+      create: longNameUser,
+      update: longNameUser
+    })
+    const savedUser = await client.user.findUniqueOrThrow({
+      where: {
+        email: longNameUser.email
+      }
+    })
+    expect(savedUser.email).toStrictEqual(longNameUser.email)
+    // The encrypted field is larger than the unencrypted field, so just comparing
+    // the lengths is fine.
+    expect(savedUser.name?.length).toStrictEqual(longNameUser.name.length)
+    // Don't test for equality, otherwise we'd fill up the jest log with
+    // a massive error message if something goes wrong.
+    expect(
+      createHash('sha256')
+        .update(savedUser.name ?? '')
+        .digest('hex')
+    ).toStrictEqual(
+      createHash('sha256').update(longNameUser.name).digest('hex')
+    )
+  }, 15_000) // storing 4 MiB into the DB is a bit slow
 })
