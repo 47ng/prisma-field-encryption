@@ -370,6 +370,13 @@ Migrations will look for cursor fields in your models in this order:
 If no cursor is found for a model with encrypted fields, the generator will
 throw an error when running `prisma generate`.
 
+### Disabling Migration Warnings
+
+You can use the new environment variable `DISABLE_MIGRATION_WARNING` to disable the
+warning about missing cursors. However, if a model lacks a suitable cursor and this
+warning is disabled, the `prisma generate` command will still fail to run.
+
+
 ## Key management
 
 This library is based on [@47ng/cloak](https://github.com/47ng/cloak), which comes

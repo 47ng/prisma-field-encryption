@@ -33,6 +33,10 @@ export function analyseDMMF(input: DMMFDocument): DMMFModels {
   const dmmf = dmmfDocumentParser.parse(input)
   const allModels = dmmf.datamodel.models
 
+  const disabledWarningsModels = process.env.DISABLE_MIGRATION_WARNING
+    ? process.env.DISABLE_MIGRATION_WARNING.split(',')
+    : []
+
   return allModels.reduce<DMMFModels>((output, model) => {
     const idField = model.fields.find(
       field => field.isId && supportedCursorTypes.includes(String(field.type))
@@ -121,7 +125,8 @@ export function analyseDMMF(input: DMMFDocument): DMMFModels {
 
     if (
       Object.keys(modelDescriptor.fields).length > 0 &&
-      !modelDescriptor.cursor
+      !modelDescriptor.cursor &&
+      !disabledWarningsModels.includes(model.name)
     ) {
       console.warn(warnings.noCursorFound(model.name))
     }
