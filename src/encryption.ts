@@ -81,14 +81,16 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
             if (!fieldConfig.hash) {
               console.warn(warnings.whereConnectClauseNoHash(operation, path))
             } else {
-              const fieldConfigHash = fieldConfig.hash;
+              const fieldConfigHash = fieldConfig.hash
 
-              let hash: string | string[];
+              let hash: string | string[]
               // If unHashedValue is a list, hash each value
-              if (typeof unHashedValue === 'object') {
-                hash = (unHashedValue as string[]).map((value) => hashString(value, fieldConfigHash));
+              if (Array.isArray(unHashedValue)) {
+                hash = unHashedValue.map(value =>
+                  hashString(value, fieldConfigHash)
+                )
               } else {
-                hash = hashString(unHashedValue, fieldConfigHash);
+                hash = hashString(unHashedValue, fieldConfigHash)
               }
               debug.encryption(
                 `Swapping encrypted search of ${model}.${field} with hash search under ${fieldConfig.hash.targetField} (hash: ${hash})`
@@ -101,7 +103,7 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
 
           // Encrypting list values is not yet supported
           if (typeof unHashedValue !== 'string') {
-            return;
+            return
           }
 
           if (isOrderBy(path, field, unHashedValue)) {
@@ -118,7 +120,10 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
             return
           }
           try {
-            const cipherText = encryptStringSync(unHashedValue, keys.encryptionKey)
+            const cipherText = encryptStringSync(
+              unHashedValue,
+              keys.encryptionKey
+            )
             objectPath.set(draft.args, path, cipherText)
             debug.encryption(`Encrypted ${model}.${field} at path \`${path}\``)
             if (fieldConfig.hash) {
@@ -192,7 +197,7 @@ export function decryptOnRead<Models extends string, Actions extends string>(
       try {
         // Decrypting list values is not yet supported
         if (typeof cipherText !== 'string') {
-          return;
+          return
         }
 
         if (!cloakedStringRegex.test(cipherText)) {
@@ -233,7 +238,11 @@ function rewriteHashedFieldPath(
 ) {
   const items = path.split('.').reverse()
   // Special case for `where field equals or not` clause
-  if (items.includes('where') && items[1] === field && ['equals', 'not', 'in'].includes(items[0])) {
+  if (
+    items.includes('where') &&
+    items[1] === field &&
+    ['equals', 'not', 'in'].includes(items[0])
+  ) {
     items[1] = hashField
     return items.reverse().join('.')
   }
