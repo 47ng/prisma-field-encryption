@@ -45,7 +45,7 @@
     "migrate": "ts-node ./src/tests/migrate.ts"
   },
   "dependencies": {
-    "@47ng/cloak": "^1.1.0",
+    "@47ng/cloak": "^1.2.0",
     "@prisma/generator-helper": "^5.9.1",
     "debug": "^4.3.4",
     "immer": "^10.0.3",

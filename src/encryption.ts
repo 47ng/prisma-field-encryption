@@ -1,11 +1,11 @@
 import {
-  cloakedStringRegex,
   CloakKeychain,
   decryptStringSync,
   encryptStringSync,
   findKeyForMessage,
   makeKeychainSync,
   ParsedCloakKey,
+  parseCloakedString,
   parseKeySync
 } from '@47ng/cloak'
 import { Draft, produce } from 'immer'
@@ -176,7 +176,7 @@ export function decryptOnRead<Models extends string, Actions extends string>(
       field
     }) {
       try {
-        if (!cloakedStringRegex.test(cipherText)) {
+        if (!parseCloakedString(cipherText)) {
           return
         }
         const decryptionKey = findKeyForMessage(cipherText, keys.keychain)

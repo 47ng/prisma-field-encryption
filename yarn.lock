@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@47ng/cloak@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@47ng/cloak/-/cloak-1.1.0.tgz#4172ea63287d3c28aef3ac361fbe313d55647204"
-  integrity sha512-47dVSPgjTiH3Fgt2CATudxJAU7Fv1WjFIo2e4tXG2UcQitqmIGf9GCgv1MnGv8ctNGPAy9gsjHnNujzuZ1bOow==
+"@47ng/cloak@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@47ng/cloak/-/cloak-1.2.0.tgz#7d811527b1530ac55196c7e41fc3bb3eb0c0ac82"
+  integrity sha512-kKufIDIfW7+YdW+m/0PIFR9zsoIan04tCiAoWsvd2e/MsIh4HtU//n/xDk8eNTTl9cN/rI78qd1r2zCP0QB7hw==
   dependencies:
     "@47ng/codec" "^1.0.1"
     "@stablelib/base64" "^1.0.1"
