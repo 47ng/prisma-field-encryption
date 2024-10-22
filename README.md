@@ -43,13 +43,21 @@ and don't require a preview feature flag.
 ```ts
 import { PrismaClient } from '@prisma/client'
 import { fieldEncryptionExtension } from 'prisma-field-encryption'
+import { type PrismaClientExtends } from '@prisma/client/extension'
+import type * as runtime from '@prisma/client/runtime/library'
+
+// Define the extended client type using Prisma's extension type system
+type ExtendedClient = PrismaClient &
+  PrismaClientExtends<runtime.Types.Extensions.DefaultArgs>
 
 const globalClient = new PrismaClient()
 
 export const client = globalClient.$extends(
   // This is a function, don't forget to call it:
   fieldEncryptionExtension()
-)
+) as ExtendedClient
+
+export type { ExtendedClient as PrismaClient }
 ```
 
 Read more about how to use [Prisma client extensions](https://www.prisma.io/docs/concepts/components/prisma-client/client-extensions).
