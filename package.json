@@ -5,9 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
-  "bin": {
-    "prisma-field-encryption": "./dist/generator/main.js"
-  },
+  "bin": "./dist/generator/main.js",
   "author": {
     "name": "François Best",
     "email": "contact@francoisbest.com",
