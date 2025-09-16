@@ -1,9 +1,12 @@
 import { namespace } from './debugger'
 import {
   HashFieldNormalizeOptions,
-  type DMMFField,
-  type DMMFModel
 } from './types'
+import { 
+  type Field,
+  type Model
+} from '@mrleebo/prisma-ast'
+
 
 const error = `[${namespace}] Error`
 const warning = `[${namespace}] Warning`
@@ -11,13 +14,13 @@ const warning = `[${namespace}] Warning`
 export const errors = {
   // Setup errors
   noEncryptionKey: `${error}: no encryption key provided.`,
-  unsupportedFieldType: (model: DMMFModel, field: DMMFField) =>
+  unsupportedFieldType: (model: Model, field: Field) =>
     `${error}: encryption enabled for field ${model.name}.${field.name} of unsupported type ${field.type}: only String fields can be encrypted.`,
-  unsupporteHashFieldType: (model: DMMFModel, field: DMMFField) =>
+  unsupporteHashFieldType: (model: Model, field: Field) =>
     `${error}: hash enabled for field ${model.name}.${field.name} of unsupported type ${field.type}: only String fields can contain hashes.`,
   hashSourceFieldNotFound: (
-    model: DMMFModel,
-    hashField: DMMFField,
+    model: Model,
+    hashField: Field,
     sourceField: string
   ) => `${error}: no such field \`${sourceField}\` in ${model.name}
   -> Referenced by hash field ${model.name}.${hashField.name}`,

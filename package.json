@@ -48,8 +48,7 @@
     "@prisma/generator-helper": "^5.9.1",
     "debug": "^4.3.4",
     "immer": "^10.0.3",
-    "object-path": "^0.11.8",
-    "zod": "^3.22.4"
+    "object-path": "^0.11.8"
   },
   "peerDependencies": {
     "@prisma/client": ">= 4.7"

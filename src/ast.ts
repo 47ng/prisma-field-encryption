@@ -1,7 +1,6 @@
 import type { Encoding } from '@47ng/codec'
 import { 
   getSchema,
-  type Schema, 
   type Block, 
   type Field,
   type Attribute,
@@ -94,9 +93,7 @@ export function analyseSchema(schemaContent: string): ASTModels {
             field.name
           )
           if (fieldConfig && String(field.fieldType) !== 'String') {
-            const mockField = { name: field.name, type: field.fieldType }
-            const mockModel = { name: modelName }
-            throw new Error(errors.unsupportedFieldType(mockModel as any, mockField as any))
+            throw new Error(errors.unsupportedFieldType(modelBlock, field))
           }
           return fieldConfig ? { ...fieldsAcc, [field.name]: fieldConfig } : fieldsAcc
         },
@@ -134,16 +131,12 @@ export function analyseSchema(schemaContent: string): ASTModels {
         return
       }
       if (String(field.fieldType) !== 'String') {
-        const mockField = { name: field.name, type: field.fieldType }
-        const mockModel = { name: modelName }
-        throw new Error(errors.unsupporteHashFieldType(mockModel as any, mockField as any))
+        throw new Error(errors.unsupporteHashFieldType(modelBlock, field))
       }
       const { sourceField, ...hash } = hashConfig
       if (!(sourceField in modelDescriptor.fields)) {
-        const mockField = { name: field.name, type: field.fieldType }
-        const mockModel = { name: modelName }
         throw new Error(
-          errors.hashSourceFieldNotFound(mockModel as any, mockField as any, sourceField)
+          errors.hashSourceFieldNotFound(modelBlock, field, sourceField)
         )
       }
       modelDescriptor.fields[hashConfig.sourceField].hash = hash
