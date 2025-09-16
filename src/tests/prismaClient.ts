@@ -1,13 +1,13 @@
 import { fieldEncryptionExtension, fieldEncryptionMiddleware } from '../index'
 import { Configuration } from '../types'
-import { Prisma, PrismaClient } from './.generated/client'
+import { PrismaClient } from './.generated/client'
 
 const TEST_ENCRYPTION_KEY =
   'k1.aesgcm256.__________________________________________8='
 
 const config: Configuration = {
   encryptionKey: TEST_ENCRYPTION_KEY,
-  dmmf: Prisma.dmmf
+  schemaPath: './prisma/schema.prisma'
 }
 
 export function makeMiddlewareClient() {

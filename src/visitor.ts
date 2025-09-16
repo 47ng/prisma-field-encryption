@@ -1,6 +1,6 @@
 import type { Debugger } from 'debug'
 import { debug } from './debugger'
-import { DMMFModels } from './dmmf'
+import { ASTModels } from './ast'
 import { Item, traverseTree } from './traverseTree'
 import type { FieldConfiguration, MiddlewareParams } from './types'
 
@@ -19,7 +19,7 @@ export interface TargetField {
 export type TargetFieldVisitorFn = (targetField: TargetField) => void
 
 const makeVisitor = (
-  models: DMMFModels,
+  models: ASTModels,
   visitor: TargetFieldVisitorFn,
   specialSubFields: string[],
   debug: Debugger
@@ -79,7 +79,7 @@ export function visitInputTargetFields<
   Actions extends string
 >(
   params: MiddlewareParams<Models, Actions>,
-  models: DMMFModels,
+  models: ASTModels,
   visitor: TargetFieldVisitorFn
 ) {
   traverseTree(
@@ -97,7 +97,7 @@ export function visitOutputTargetFields<
 >(
   params: MiddlewareParams<Models, Actions>,
   result: any,
-  models: DMMFModels,
+  models: ASTModels,
   visitor: TargetFieldVisitorFn
 ) {
   traverseTree(result, makeVisitor(models, visitor, [], debug.decryption), {

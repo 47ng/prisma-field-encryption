@@ -1,41 +1,38 @@
-import { getDMMF } from '@prisma/internals'
-import { analyseDMMF } from './dmmf'
+import { analyseSchema } from './ast'
 import type { MiddlewareParams } from './types'
 import { visitInputTargetFields } from './visitor'
 
 describe('visitor', () => {
-  const dmmf = getDMMF({
-    datamodel: `
-      model User {
-        id           Int     @id @default(autoincrement())
-        email        String  @unique
-        name         String? /// @encrypted
-        posts        Post[]
-        pinnedPost   Post?   @relation(fields: [pinnedPostId], references: [id], name: "pinnedPost")
-        pinnedPostId Int?
-      }
+  const schema = `
+    model User {
+      id           Int     @id @default(autoincrement())
+      email        String  @unique
+      name         String? /// @encrypted
+      posts        Post[]
+      pinnedPost   Post?   @relation(fields: [pinnedPostId], references: [id], name: "pinnedPost")
+      pinnedPostId Int?
+    }
 
-      model Post {
-        id         Int        @id @default(autoincrement())
-        title      String
-        content    String? /// @encrypted
-        author     User?      @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-        authorId   Int?
-        categories Category[]
-        havePinned User[]     @relation("pinnedPost")
-      }
+    model Post {
+      id         Int        @id @default(autoincrement())
+      title      String
+      content    String? /// @encrypted
+      author     User?      @relation(fields: [authorId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+      authorId   Int?
+      categories Category[]
+      havePinned User[]     @relation("pinnedPost")
+    }
 
-      // Model without encrypted fields
-      model Category {
-        id    Int    @id @default(autoincrement())
-        name  String
-        posts Post[]
-      }
-    `
-  })
+    // Model without encrypted fields
+    model Category {
+      id    Int    @id @default(autoincrement())
+      name  String
+      posts Post[]
+    }
+  `
 
-  test('visitInputTargetFields - simple example', async () => {
-    const models = analyseDMMF(await dmmf)
+  test('visitInputTargetFields - simple example', () => {
+    const models = analyseSchema(schema)
     const params: MiddlewareParams<any, any> = {
       action: 'create',
       model: 'User',
@@ -61,8 +58,8 @@ describe('visitor', () => {
     })
   })
 
-  test('visitInputTargetFields - nested create', async () => {
-    const models = analyseDMMF(await dmmf)
+  test('visitInputTargetFields - nested create', () => {
+    const models = analyseSchema(schema)
     const params: MiddlewareParams<any, any> = {
       action: 'create',
       model: 'User',

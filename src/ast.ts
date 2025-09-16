@@ -1,11 +1,17 @@
 import type { Encoding } from '@47ng/codec'
+import { 
+  getSchema,
+  type Schema, 
+  type Block, 
+  type Field,
+  type Attribute,
+  type Model
+} from '@mrleebo/prisma-ast'
 import { errors, warnings } from './errors'
 import {
-  DMMFDocument,
   FieldConfiguration,
   HashFieldConfiguration,
-  HashFieldNormalizeOptions,
-  dmmfDocumentParser
+  HashFieldNormalizeOptions
 } from './types'
 
 export interface ConnectionDescriptor {
@@ -13,7 +19,7 @@ export interface ConnectionDescriptor {
   isList: boolean
 }
 
-export interface DMMFModelDescriptor {
+export interface ASTModelDescriptor {
   /**
    * The field to use to iterate over rows
    * in encryption/decryption/key rotation migrations.
@@ -25,95 +31,119 @@ export interface DMMFModelDescriptor {
   connections: Record<string, ConnectionDescriptor> // key: field name
 }
 
-export type DMMFModels = Record<string, DMMFModelDescriptor> // key: model name
+export type ASTModels = Record<string, ASTModelDescriptor> // key: model name
 
 const supportedCursorTypes = ['Int', 'String', 'BigInt']
 
-export function analyseDMMF(input: DMMFDocument): DMMFModels {
-  const dmmf = dmmfDocumentParser.parse(input)
-  const allModels = dmmf.datamodel.models
-
-  return allModels.reduce<DMMFModels>((output, model) => {
-    const idField = model.fields.find(
-      field => field.isId && supportedCursorTypes.includes(String(field.type))
+export function analyseSchema(schemaContent: string): ASTModels {
+  const schema = getSchema(schemaContent)
+  
+  // Find all model blocks
+  const modelBlocks = schema.list.filter((block: Block) => block.type === 'model') as Model[]
+  
+  return modelBlocks.reduce<ASTModels>((output: ASTModels, modelBlock: Model) => {
+    const modelName = modelBlock.name
+    const fields = modelBlock.properties.filter((prop): prop is Field => prop.type === 'field')
+    
+    // Find cursor field candidates
+    const idField = fields.find(
+      (field: Field) => 
+        field.attributes?.some((attr: Attribute) => attr.name === 'id') &&
+        supportedCursorTypes.includes(String(field.fieldType))
     )
-    const uniqueField = model.fields.find(
-      field =>
-        field.isUnique && supportedCursorTypes.includes(String(field.type))
+    
+    const uniqueField = fields.find(
+      (field: Field) => 
+        field.attributes?.some((attr: Attribute) => attr.name === 'unique') &&
+        supportedCursorTypes.includes(String(field.fieldType))
     )
-    const cursorField = model.fields.find(field =>
-      field.documentation?.includes('@encryption:cursor')
+    
+    const cursorField = fields.find((field: Field) => 
+      field.comment?.includes('@encryption:cursor')
     )
+    
     if (cursorField) {
       // Make sure custom cursor field is valid
-      if (!cursorField.isUnique) {
-        throw new Error(errors.nonUniqueCursor(model.name, cursorField.name))
+      const isUnique = cursorField.attributes?.some((attr: Attribute) => 
+        attr.name === 'unique' || attr.name === 'id'
+      )
+      if (!isUnique) {
+        throw new Error(errors.nonUniqueCursor(modelName, cursorField.name))
       }
-      if (!supportedCursorTypes.includes(String(cursorField.type))) {
+      if (!supportedCursorTypes.includes(String(cursorField.fieldType))) {
         throw new Error(
           errors.unsupportedCursorType(
-            model.name,
+            modelName,
             cursorField.name,
-            String(cursorField.type)
+            String(cursorField.fieldType)
           )
         )
       }
-      if (cursorField.documentation?.includes('@encrypted')) {
-        throw new Error(errors.encryptedCursor(model.name, cursorField.name))
+      if (cursorField.comment?.includes('@encrypted')) {
+        throw new Error(errors.encryptedCursor(modelName, cursorField.name))
       }
     }
 
-    const modelDescriptor: DMMFModelDescriptor = {
+    const modelDescriptor: ASTModelDescriptor = {
       cursor: cursorField?.name ?? idField?.name ?? uniqueField?.name,
-      fields: model.fields.reduce<DMMFModelDescriptor['fields']>(
-        (fields, field) => {
+      fields: fields.reduce<Record<string, FieldConfiguration>>(
+        (fieldsAcc: Record<string, FieldConfiguration>, field: Field) => {
           const fieldConfig = parseEncryptedAnnotation(
-            field.documentation,
-            model.name,
+            field.comment,
+            modelName,
             field.name
           )
-          if (fieldConfig && field.type !== 'String') {
-            throw new Error(errors.unsupportedFieldType(model, field))
+          if (fieldConfig && String(field.fieldType) !== 'String') {
+            const mockField = { name: field.name, type: field.fieldType }
+            const mockModel = { name: modelName }
+            throw new Error(errors.unsupportedFieldType(mockModel as any, mockField as any))
           }
-          return fieldConfig ? { ...fields, [field.name]: fieldConfig } : fields
+          return fieldConfig ? { ...fieldsAcc, [field.name]: fieldConfig } : fieldsAcc
         },
         {}
       ),
-      connections: model.fields.reduce<DMMFModelDescriptor['connections']>(
-        (connections, field) => {
-          const targetModel = allModels.find(model => field.type === model.name)
+      connections: fields.reduce<Record<string, ConnectionDescriptor>>(
+        (connectionsAcc: Record<string, ConnectionDescriptor>, field: Field) => {
+          const targetModel = modelBlocks.find((model: Model) => 
+            String(field.fieldType) === model.name
+          )
           if (!targetModel) {
-            return connections
+            return connectionsAcc
           }
           const connection: ConnectionDescriptor = {
             modelName: targetModel.name,
-            isList: field.isList
+            isList: field.array === true
           }
           return {
-            ...connections,
+            ...connectionsAcc,
             [field.name]: connection
           }
         },
         {}
       )
     }
+    
     // Inject hash information
-    model.fields.forEach(field => {
+    fields.forEach((field: Field) => {
       const hashConfig = parseHashAnnotation(
-        field.documentation,
-        model.name,
+        field.comment,
+        modelName,
         field.name
       )
       if (!hashConfig) {
         return
       }
-      if (field.type !== 'String') {
-        throw new Error(errors.unsupporteHashFieldType(model, field))
+      if (String(field.fieldType) !== 'String') {
+        const mockField = { name: field.name, type: field.fieldType }
+        const mockModel = { name: modelName }
+        throw new Error(errors.unsupporteHashFieldType(mockModel as any, mockField as any))
       }
       const { sourceField, ...hash } = hashConfig
       if (!(sourceField in modelDescriptor.fields)) {
+        const mockField = { name: field.name, type: field.fieldType }
+        const mockModel = { name: modelName }
         throw new Error(
-          errors.hashSourceFieldNotFound(model, field, sourceField)
+          errors.hashSourceFieldNotFound(mockModel as any, mockField as any, sourceField)
         )
       }
       modelDescriptor.fields[hashConfig.sourceField].hash = hash
@@ -123,11 +153,12 @@ export function analyseDMMF(input: DMMFDocument): DMMFModels {
       Object.keys(modelDescriptor.fields).length > 0 &&
       !modelDescriptor.cursor
     ) {
-      console.warn(warnings.noCursorFound(model.name))
+      console.warn(warnings.noCursorFound(modelName))
     }
+    
     return {
       ...output,
-      [model.name]: modelDescriptor
+      [modelName]: modelDescriptor
     }
   }, {})
 }
@@ -252,4 +283,11 @@ function isValidNormalizeOptions(
   options: string[]
 ): options is HashFieldNormalizeOptions[] {
   return options.every(option => option in HashFieldNormalizeOptions)
+}
+
+// Helper function to read schema from file
+export function analyseSchemaFile(schemaPath: string): ASTModels {
+  const fs = require('fs')
+  const schemaContent = fs.readFileSync(schemaPath, 'utf8')
+  return analyseSchema(schemaContent)
 }

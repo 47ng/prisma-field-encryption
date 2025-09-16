@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import type { DMMFModels } from '../dmmf'
+import type { ASTModels } from '../ast'
 
 export interface GenerateIndexArgs {
-  models: DMMFModels
+  models: ASTModels
   prismaClientModule: string
   outputDir: string
   modelNamePad: number

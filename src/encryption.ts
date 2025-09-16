@@ -11,7 +11,7 @@ import {
 import { Draft, produce } from 'immer'
 import objectPath from 'object-path'
 import { debug } from './debugger'
-import type { DMMFModels } from './dmmf'
+import type { ASTModels } from './ast'
 import { errors, warnings } from './errors'
 import { hashString } from './hash'
 import type { Configuration, MiddlewareParams } from './types'
@@ -54,7 +54,7 @@ export function configureKeys(config: Configuration): KeysConfiguration {
 export function encryptOnWrite<Models extends string, Actions extends string>(
   params: MiddlewareParams<Models, Actions>,
   keys: KeysConfiguration,
-  models: DMMFModels,
+  models: ASTModels,
   operation: string
 ) {
   debug.encryption('Clear-text input: %O', params)
@@ -139,7 +139,7 @@ export function decryptOnRead<Models extends string, Actions extends string>(
   params: MiddlewareParams<Models, Actions>,
   result: any,
   keys: KeysConfiguration,
-  models: DMMFModels,
+  models: ASTModels,
   operation: string
 ) {
   // Analyse the query to see if there's anything to decrypt.

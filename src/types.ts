@@ -69,7 +69,8 @@ export type DMMFDocument = z.TypeOf<typeof dmmfDocumentParser>
 export interface Configuration {
   encryptionKey?: string
   decryptionKeys?: string[]
-  dmmf?: Readonly<DMMFDocument>
+  // DMMFDocument is deprecated, using schema content string instead
+  schemaPath?: string
 }
 
 export type HashFieldConfiguration = {
