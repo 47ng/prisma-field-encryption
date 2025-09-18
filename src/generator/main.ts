@@ -3,7 +3,7 @@
 import { generatorHandler } from '@prisma/generator-helper'
 import fs from 'node:fs/promises'
 import path from 'path/posix'
-import { analyseDMMF } from '../dmmf'
+import { analyseSchema } from '../ast'
 import { generateIndex } from './generateIndex'
 import { generateModel } from './generateModel'
 
@@ -21,7 +21,7 @@ generatorHandler({
     }
   },
   async onGenerate(options) {
-    const models = analyseDMMF(options.dmmf)
+    const models = analyseSchema(options.datamodel)
     const outputDir = options.generator.output?.value!
     const concurrently = options.generator.config?.concurrently === 'true'
     const prismaClient = options.otherGenerators.find(

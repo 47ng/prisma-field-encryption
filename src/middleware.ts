@@ -1,5 +1,5 @@
 import { debug } from './debugger'
-import { analyseDMMF } from './dmmf'
+import { analyseSchemaFile } from './ast'
 import { configureKeys, decryptOnRead, encryptOnWrite } from './encryption'
 import type { Configuration, Middleware, MiddlewareParams } from './types'
 
@@ -11,9 +11,13 @@ export function fieldEncryptionMiddleware<
   // or if anything is invalid.
   const keys = configureKeys(config)
   debug.setup('Keys: %O', keys)
-  const models = analyseDMMF(
-    config.dmmf ?? require('@prisma/client').Prisma.dmmf
-  )
+  
+  // Default to './prisma/schema.prisma' if not provided
+  if (!config.schemaPath) {
+    config.schemaPath = "./prisma/schema.prisma"
+  }
+  
+  const models = analyseSchemaFile(config.schemaPath)
   debug.setup('Models: %O', models)
 
   return async function fieldEncryptionMiddleware(

@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import type { DMMFModelDescriptor } from '../dmmf'
+import type { ASTModelDescriptor } from '../ast'
 
 export interface GenerateModelArgs {
   modelName: string
-  model: DMMFModelDescriptor
+  model: ASTModelDescriptor
   prismaClientModule: string
   outputDir: string
 }

@@ -5,9 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
-  "bin": {
-    "prisma-field-encryption": "./dist/generator/main.js"
-  },
+  "bin": "./dist/generator/main.js",
   "author": {
     "name": "François Best",
     "email": "contact@francoisbest.com",
@@ -46,11 +44,11 @@
   },
   "dependencies": {
     "@47ng/cloak": "^1.2.0",
+    "@mrleebo/prisma-ast": "^0.13.0",
     "@prisma/generator-helper": "^5.9.1",
     "debug": "^4.3.4",
     "immer": "^10.0.3",
-    "object-path": "^0.11.8",
-    "zod": "^3.22.4"
+    "object-path": "^0.11.8"
   },
   "peerDependencies": {
     "@prisma/client": ">= 4.7"
@@ -58,7 +56,6 @@
   "devDependencies": {
     "@commitlint/config-conventional": "^17.8.1",
     "@prisma/client": "5.9.1",
-    "@prisma/internals": "^5.9.1",
     "@types/debug": "^4.1.12",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.16",
