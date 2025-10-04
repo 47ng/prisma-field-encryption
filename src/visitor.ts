@@ -10,7 +10,7 @@ interface VisitorState {
 
 export interface TargetField {
   path: string
-  value: string
+  value: string | string[]
   model: string
   field: string
   fieldConfig: FieldConfiguration
@@ -46,7 +46,9 @@ const makeVisitor = (
       if (
         type === 'object' &&
         key in model.fields &&
-        typeof (node as any)?.[specialSubField] === 'string'
+        // Used for where: { field: in: []} queries
+        (typeof (node as any)?.[specialSubField] === 'string' ||
+          Array.isArray((node as any)?.[specialSubField]))
       ) {
         const value: string = (node as any)[specialSubField]
         const targetField: TargetField = {
@@ -84,7 +86,7 @@ export function visitInputTargetFields<
 ) {
   traverseTree(
     params.args,
-    makeVisitor(models, visitor, ['equals', 'set', 'not'], debug.encryption),
+    makeVisitor(models, visitor, ['equals', 'set', 'not', 'in'], debug.encryption),
     {
       currentModel: params.model!
     }

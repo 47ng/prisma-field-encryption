@@ -81,7 +81,12 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
             if (!fieldConfig.hash) {
               console.warn(warnings.whereConnectClauseNoHash(operation, path))
             } else {
-              const hash = hashString(clearText, fieldConfig.hash)
+              const fieldConfigHash = fieldConfig.hash
+              // If clearText is a list, hash each value
+              const hash: string | string[] = Array.isArray(clearText)
+                ? clearText.map(value => hashString(value, fieldConfigHash))
+                : hashString(clearText, fieldConfigHash)
+
               debug.encryption(
                 `Swapping encrypted search of ${model}.${field} with hash search under ${fieldConfig.hash.targetField} (hash: ${hash})`
               )
@@ -90,6 +95,14 @@ export function encryptOnWrite<Models extends string, Actions extends string>(
               return
             }
           }
+          // Encrypting list values is not yet supported
+          if (typeof clearText !== 'string') {
+            debug.encryption(
+              `Encrypting type ${typeof clearText} is not supported.`
+            )
+            return
+          }
+          
           if (isOrderBy(path, field, clearText)) {
             // Remove unsupported orderBy clause on encrypted text
             // (makes no sense to sort ciphertext nor to encrypt 'asc' | 'desc')
@@ -176,6 +189,14 @@ export function decryptOnRead<Models extends string, Actions extends string>(
       field
     }) {
       try {
+        // Decrypting list values is not yet supported
+        if (typeof cipherText !== 'string') {
+          debug.decryption(
+            `Decrypting type ${cipherText} is not supported.`
+          )
+          return
+        }
+        
         if (!parseCloakedString(cipherText)) {
           return
         }
@@ -212,8 +233,8 @@ function rewriteHashedFieldPath(
   hashField: string
 ) {
   const items = path.split('.').reverse()
-  // Special case for `where field equals or not` clause
-  if (items.includes('where') && items[1] === field && ['equals', 'not'].includes(items[0])) {
+  // Special case for `where field equals, not or in` clause
+  if (items.includes('where') && items[1] === field && ['equals', 'not', 'in'].includes(items[0])) {
     items[1] = hashField
     return items.reverse().join('.')
   }
