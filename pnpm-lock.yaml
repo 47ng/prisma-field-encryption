@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@47ng/cloak':
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: ^1.2.0
+        version: 1.2.0
       '@47ng/codec':
         specifier: ^1.1.0
         version: 1.1.0
@@ -90,8 +90,8 @@ importers:
 
 packages:
 
-  '@47ng/cloak@1.1.0':
-    resolution: {integrity: sha512-47dVSPgjTiH3Fgt2CATudxJAU7Fv1WjFIo2e4tXG2UcQitqmIGf9GCgv1MnGv8ctNGPAy9gsjHnNujzuZ1bOow==}
+  '@47ng/cloak@1.2.0':
+    resolution: {integrity: sha512-kKufIDIfW7+YdW+m/0PIFR9zsoIan04tCiAoWsvd2e/MsIh4HtU//n/xDk8eNTTl9cN/rI78qd1r2zCP0QB7hw==}
     hasBin: true
 
   '@47ng/codec@1.1.0':
@@ -3320,7 +3320,7 @@ packages:
 
 snapshots:
 
-  '@47ng/cloak@1.1.0':
+  '@47ng/cloak@1.2.0':
     dependencies:
       '@47ng/codec': 1.1.0
       '@stablelib/base64': 1.0.1
