@@ -10,7 +10,7 @@ const config: Configuration = {
   dmmf: Prisma.dmmf
 }
 
-export async function makeExtensionClient() {
+export function makeExtensionClient() {
   const client = new PrismaClient()
-  return client.$extends(await fieldEncryptionExtension(config)) as PrismaClient
+  return client.$extends(fieldEncryptionExtension(config)) as PrismaClient
 }

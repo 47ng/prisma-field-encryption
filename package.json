@@ -2,16 +2,8 @@
   "name": "prisma-field-encryption",
   "version": "0.0.0-semantically-released",
   "description": "Transparent field-level encryption at rest for Prisma",
-  "type": "module",
   "main": "dist/index.js",
-  "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
   "license": "MIT",
   "bin": {
     "prisma-field-encryption": "./dist/generator/main.js"

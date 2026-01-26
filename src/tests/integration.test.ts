@@ -9,11 +9,9 @@ import * as sqlite from './sqlite'
 
 const clients = [{ type: 'extension', client: makeExtensionClient() }]
 
-describe.each(clients)('integration ($type)', ({ client: clientPromise }) => {
-  let client: Awaited<typeof clientPromise>
+describe.each(clients)('integration ($type)', ({ client }) => {
 
   beforeAll(async () => {
-    client = await clientPromise
     // Reset database
     const src = path.resolve(process.cwd(), 'prisma', 'db.test.sqlite')
     const dst = path.resolve(process.cwd(), 'prisma', 'db.integration.sqlite')

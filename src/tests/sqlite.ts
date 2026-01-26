@@ -3,7 +3,7 @@ import Database from 'better-sqlite3'
 
 function openDatabase() {
   return new Database(
-    path.resolve(import.meta.dirname, '../../prisma/db.integration.sqlite')
+    path.resolve(__dirname, '../../prisma/db.integration.sqlite')
   )
 }
 

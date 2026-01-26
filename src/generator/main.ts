@@ -2,13 +2,11 @@
 
 import { generatorHandler } from '@prisma/generator-helper'
 import fs from 'node:fs/promises'
-import { createRequire } from 'node:module'
 import { analyseDMMF } from '../dmmf'
 import { generateIndex } from './generateIndex'
 import { generateModel } from './generateModel'
 import { getPrismaClientModule } from './prismaModule'
 
-const require = createRequire(import.meta.url)
 const packageJson = require('../../package.json') as { version: string }
 
 export interface Config {

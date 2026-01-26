@@ -4,7 +4,7 @@ export default defineConfig([
   // Main library
   {
     entry: ['src/index.ts'],
-    format: ['esm'],
+    format: ['cjs'],
     outDir: 'dist',
     dts: true,
     clean: true,
@@ -15,7 +15,7 @@ export default defineConfig([
   // CLI generator (needs shebang)
   {
     entry: ['src/generator/main.ts'],
-    format: ['esm'],
+    format: ['cjs'],
     outDir: 'dist/generator',
     dts: false,
     platform: 'node',
