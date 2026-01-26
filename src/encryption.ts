@@ -1,14 +1,14 @@
 import {
-  CloakKeychain,
+  type CloakKeychain,
   decryptStringSync,
   encryptStringSync,
   findKeyForMessage,
   makeKeychainSync,
-  ParsedCloakKey,
   parseCloakedString,
+  type ParsedCloakKey,
   parseKeySync
 } from '@47ng/cloak'
-import { Draft, produce } from 'immer'
+import { type Draft, produce } from 'immer'
 import objectPath from 'object-path'
 import { debug } from './debugger'
 import type { DMMFModels } from './dmmf'
@@ -213,7 +213,11 @@ function rewriteHashedFieldPath(
 ) {
   const items = path.split('.').reverse()
   // Special case for `where field equals or not` clause
-  if (items.includes('where') && items[1] === field && ['equals', 'not'].includes(items[0])) {
+  if (
+    items.includes('where') &&
+    items[1] === field &&
+    ['equals', 'not'].includes(items[0])
+  ) {
     items[1] = hashField
     return items.reverse().join('.')
   }

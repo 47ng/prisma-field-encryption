@@ -4,35 +4,30 @@
     "strict": true,
 
     // Modules
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "baseUrl": "./src",
     "rootDir": "./src",
 
     // Language & Environment
-    "target": "es2018",
-    "lib": ["dom"],
+    "target": "esnext",
 
     // Emit
     "outDir": "./dist",
     "declaration": true,
-    "downlevelIteration": true,
+    "noEmit": true,
 
     // Interop
-    "allowJs": true,
     "isolatedModules": true,
     "esModuleInterop": true,
+    "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
-
-    // Experimental Options
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
 
     // Misc
     "skipLibCheck": true
   },
-  "include": ["**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": [
     "node_modules",
     "./dist",

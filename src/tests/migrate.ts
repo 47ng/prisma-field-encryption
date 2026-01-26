@@ -2,7 +2,7 @@ import { migrate } from './migrations'
 import { makeExtensionClient } from './prismaClient'
 
 async function main() {
-  const client = makeExtensionClient()
+  const client = await makeExtensionClient()
   await Promise.all([
     client.user.create({
       data: {
@@ -30,7 +30,7 @@ async function main() {
     }),
     client.bigIntCursorTest.create({
       data: {
-        id: 1,
+        id: 1n,
         key: 'Answer to life, universe and everything',
         value: 42
       }
@@ -39,6 +39,4 @@ async function main() {
   await migrate(client)
 }
 
-if (require.main === module) {
-  main()
-}
+main()

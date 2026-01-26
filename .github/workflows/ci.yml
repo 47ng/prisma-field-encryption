@@ -17,31 +17,16 @@ jobs:
     name: Continuous Integration
     runs-on: ubuntu-latest
     steps:
-      - id: yarn-cache
-        name: Get Yarn cache path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          node-version: lts/*
-      - uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
-        name: Load Yarn cache
-        with:
-          path: ${{ steps.yarn-cache.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - run: yarn install
-        name: Install dependencies
+          node-version-file: .node-version
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install
       - name: Run integration tests
-        run: |
-          yarn build
-          yarn test:types
-          yarn test:unit
-          yarn test:integration
-          yarn test:coverage:merge
-          yarn test:coverage:report
-
+        run: pnpm run ci
       - uses: coverallsapp/github-action@643bc377ffa44ace6394b2b5d0d3950076de9f63
         name: Report code coverage
         continue-on-error: true

@@ -1,4 +1,5 @@
 import { getDMMF } from '@prisma/internals'
+import { describe, expect, test, vi } from 'vitest'
 import { analyseDMMF } from './dmmf'
 import type { MiddlewareParams } from './types'
 import { visitInputTargetFields } from './visitor'
@@ -46,7 +47,7 @@ describe('visitor', () => {
       dataPath: [],
       runInTransaction: false
     }
-    const visitor = jest.fn()
+    const visitor = vi.fn()
     visitInputTargetFields(params, models, visitor)
     expect(visitor).toHaveBeenCalledTimes(1)
     expect(visitor).toHaveBeenCalledWith({
@@ -85,7 +86,7 @@ describe('visitor', () => {
       dataPath: [],
       runInTransaction: false
     }
-    const visitor = jest.fn()
+    const visitor = vi.fn()
     visitInputTargetFields(params, models, visitor)
     expect(visitor).toHaveBeenCalledTimes(3)
     expect(visitor.mock.calls).toEqual([

@@ -1,12 +1,10 @@
-import path from 'path'
-import { open } from 'sqlite'
-import sqlite3 from 'sqlite3'
+import path from 'node:path'
+import Database from 'better-sqlite3'
 
-async function openDatabase() {
-  return open({
-    filename: path.resolve(__dirname, '../../prisma/db.integration.sqlite'),
-    driver: sqlite3.Database
-  })
+function openDatabase() {
+  return new Database(
+    path.resolve(import.meta.dirname, '../../prisma/db.integration.sqlite')
+  )
 }
 
 export interface SQLiteQuery {
@@ -16,7 +14,7 @@ export interface SQLiteQuery {
   }
 }
 
-export async function get({ table, where = {} }: SQLiteQuery) {
+export async function get<T = Record<string, unknown>>({ table, where = {} }: SQLiteQuery): Promise<T | undefined> {
   const whereFields = Object.keys(where ?? {})
   const whereQuery = whereFields
     .map(field => `${field} = :${field}`)
@@ -24,15 +22,16 @@ export async function get({ table, where = {} }: SQLiteQuery) {
   const query = `select * from ${table}${
     whereFields.length ? ` where ${whereQuery}` : ''
   }`
-  const args = whereFields.reduce(
+  const args = whereFields.reduce<Record<string, string>>(
     (args, field) => ({
       ...args,
-      [`:${field}`]: where[field]
+      [field]: where[field]
     }),
     {}
   )
-  const db = await openDatabase()
-  const result = await db.get(query, args)
-  await db.close()
+  const db = openDatabase()
+  const stmt = db.prepare(query)
+  const result = stmt.get(args) as T | undefined
+  db.close()
   return result
 }

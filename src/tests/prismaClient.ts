@@ -1,6 +1,6 @@
-import { fieldEncryptionExtension, fieldEncryptionMiddleware } from '../index'
-import { Configuration } from '../types'
-import { Prisma, PrismaClient } from './.generated/client'
+import { fieldEncryptionExtension } from '../index'
+import type { Configuration } from '../types'
+import { Prisma, PrismaClient } from './.generated/client/index'
 
 const TEST_ENCRYPTION_KEY =
   'k1.aesgcm256.__________________________________________8='
@@ -10,13 +10,7 @@ const config: Configuration = {
   dmmf: Prisma.dmmf
 }
 
-export function makeMiddlewareClient() {
+export async function makeExtensionClient() {
   const client = new PrismaClient()
-  client.$use(fieldEncryptionMiddleware(config))
-  return client
-}
-
-export function makeExtensionClient() {
-  const client = new PrismaClient()
-  return client.$extends(fieldEncryptionExtension(config)) as PrismaClient
+  return client.$extends(await fieldEncryptionExtension(config)) as PrismaClient
 }

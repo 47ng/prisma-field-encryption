@@ -1,7 +1,8 @@
 import { getDMMF } from '@prisma/internals'
+import { describe, expect, test } from 'vitest'
 import {
   analyseDMMF,
-  DMMFModels,
+  type DMMFModels,
   parseEncryptedAnnotation,
   parseHashAnnotation
 } from './dmmf'

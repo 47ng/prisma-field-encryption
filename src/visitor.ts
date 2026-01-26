@@ -1,7 +1,7 @@
 import type { Debugger } from 'debug'
 import { debug } from './debugger'
-import { DMMFModels } from './dmmf'
-import { Item, traverseTree } from './traverseTree'
+import type { DMMFModels } from './dmmf'
+import { traverseTree, type Item } from './traverseTree'
 import type { FieldConfiguration, MiddlewareParams } from './types'
 
 interface VisitorState {

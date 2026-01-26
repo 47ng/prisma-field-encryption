@@ -1,4 +1,5 @@
-import { formatKey } from '@47ng/cloak/dist/key'
+import { serializeKey } from '@47ng/cloak'
+import { describe, expect, test } from 'vitest'
 import { configureKeys } from './encryption'
 import { errors } from './errors'
 
@@ -11,17 +12,17 @@ describe('encryption', () => {
       expect(run).toThrowError(errors.noEncryptionKey)
     })
 
-    test('Providing encryptionKey directly', () => {
+    test('Providing encryptionKey directly', async () => {
       const { encryptionKey } = configureKeys({
         encryptionKey: TEST_KEY
       })
-      expect(formatKey(encryptionKey.raw as Uint8Array)).toEqual(TEST_KEY)
+      expect(await serializeKey(encryptionKey)).toEqual(TEST_KEY)
     })
 
-    test('Providing encryptionKey via the environment', () => {
+    test('Providing encryptionKey via the environment', async () => {
       process.env.PRISMA_FIELD_ENCRYPTION_KEY = TEST_KEY
       const { encryptionKey } = configureKeys({})
-      expect(formatKey(encryptionKey.raw as Uint8Array)).toEqual(TEST_KEY)
+      expect(await serializeKey(encryptionKey)).toEqual(TEST_KEY)
       process.env.PRISMA_FIELD_ENCRYPTION_KEY = undefined
     })
 

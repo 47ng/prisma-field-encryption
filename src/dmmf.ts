@@ -1,9 +1,9 @@
 import type { Encoding } from '@47ng/codec'
 import { errors, warnings } from './errors'
 import {
-  DMMFDocument,
-  FieldConfiguration,
-  HashFieldConfiguration,
+  type DMMFDocument,
+  type FieldConfiguration,
+  type HashFieldConfiguration,
   HashFieldNormalizeOptions,
   dmmfDocumentParser
 } from './types'

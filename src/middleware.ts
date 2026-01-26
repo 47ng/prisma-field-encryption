@@ -1,19 +1,32 @@
 import { debug } from './debugger'
 import { analyseDMMF } from './dmmf'
 import { configureKeys, decryptOnRead, encryptOnWrite } from './encryption'
-import type { Configuration, Middleware, MiddlewareParams } from './types'
+import type {
+  Configuration,
+  DMMFDocument,
+  Middleware,
+  MiddlewareParams
+} from './types'
 
-export function fieldEncryptionMiddleware<
+async function getDMMF(config: Configuration): Promise<DMMFDocument> {
+  if (config.dmmf) {
+    return config.dmmf
+  }
+  // Dynamic import for use in user's project where @prisma/client is generated
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const PrismaModule = (await import('@prisma/client')) as any
+  return PrismaModule.Prisma.dmmf as DMMFDocument
+}
+
+export async function fieldEncryptionMiddleware<
   Models extends string = any,
   Actions extends string = any
->(config: Configuration = {}): Middleware<Models, Actions> {
+>(config: Configuration = {}): Promise<Middleware<Models, Actions>> {
   // This will throw if the encryption key is missing
   // or if anything is invalid.
   const keys = configureKeys(config)
   debug.setup('Keys: %O', keys)
-  const models = analyseDMMF(
-    config.dmmf ?? require('@prisma/client').Prisma.dmmf
-  )
+  const models = analyseDMMF(await getDMMF(config))
   debug.setup('Models: %O', models)
 
   return async function fieldEncryptionMiddleware(

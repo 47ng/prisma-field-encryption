@@ -1,4 +1,7 @@
-import { defaultProgressReport, ProgressReportCallback } from './progressReport'
+import {
+  defaultProgressReport,
+  type ProgressReportCallback
+} from './progressReport'
 
 export type RecordVisitor<PrismaClient, Cursor> = (
   client: PrismaClient,

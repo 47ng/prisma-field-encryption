@@ -1,8 +1,9 @@
+import { describe, expect, test, vi } from 'vitest'
 import { traverseTree } from './traverseTree'
 
 describe('traverseTree', () => {
   test('root node is a literal', () => {
-    const visitor = jest.fn().mockImplementation(state => state)
+    const visitor = vi.fn().mockImplementation(state => state)
     traverseTree('Hello, World!', visitor, null)
     expect(visitor).toHaveBeenCalledTimes(1)
     expect(visitor).toHaveBeenCalledWith(null, {
@@ -14,7 +15,7 @@ describe('traverseTree', () => {
   })
 
   test('root node is an array', () => {
-    const visitor = jest.fn().mockImplementation(state => state)
+    const visitor = vi.fn().mockImplementation(state => state)
     traverseTree(['John', 'Paul', 'George', 'Ringo'], visitor, null)
     expect(visitor).toHaveBeenCalledTimes(5)
     expect(visitor.mock.calls[0][1]).toEqual({
@@ -50,7 +51,7 @@ describe('traverseTree', () => {
   })
 
   test('root node is an object', () => {
-    const visitor = jest.fn().mockImplementation(state => state)
+    const visitor = vi.fn().mockImplementation(state => state)
     const input = {
       John: 'Lennon',
       Paul: 'McCartney',
@@ -92,7 +93,7 @@ describe('traverseTree', () => {
   })
 
   test('complex object with branch state', () => {
-    const visitor = jest
+    const visitor = vi
       .fn()
       .mockImplementation((state, { path, node, type }) => {
         if (type === 'object' && path.length === 2 && path[0] === 'members') {
@@ -366,7 +367,7 @@ describe('traverseTree', () => {
   const array = Array.from({ length: 1_000_000 }, (_, i) => leaf(i))
 
   test('root node is an array with 1 million rows', () => {
-    const visitor = jest.fn().mockImplementation(state => state)
+    const visitor = vi.fn().mockImplementation(state => state)
     traverseTree(array, visitor, null)
     expect(visitor).toHaveBeenCalledTimes(3000001)
   })

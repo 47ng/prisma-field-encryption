@@ -1,6 +1,6 @@
 import { decoders, encoders } from '@47ng/codec'
 import crypto from 'node:crypto'
-import { HashFieldConfiguration, HashFieldNormalizeOptions } from './types'
+import { type HashFieldConfiguration, HashFieldNormalizeOptions } from './types'
 
 export function hashString(
   input: string,
