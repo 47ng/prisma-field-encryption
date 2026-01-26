@@ -8,6 +8,9 @@
   "bin": {
     "prisma-field-encryption": "./dist/generator/main.js"
   },
+  "files": [
+    "dist"
+  ],
   "author": {
     "name": "François Best",
     "email": "contact@francoisbest.com",
