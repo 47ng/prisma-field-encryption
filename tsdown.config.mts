@@ -10,7 +10,10 @@ export default defineConfig([
     clean: true,
     platform: 'node',
     target: 'node24',
-    outExtensions: () => ({ js: '.js', dts: '.d.ts' })
+    outExtensions: () => ({ js: '.js', dts: '.d.ts' }),
+    checks: {
+      legacyCjs: false // Suppress CJS build error in CI (remove when ESM only)
+    }
   },
   // CLI generator (needs shebang)
   {
@@ -21,6 +24,9 @@ export default defineConfig([
     platform: 'node',
     target: 'node24',
     banner: { js: '#!/usr/bin/env node' },
-    outExtensions: () => ({ js: '.js' })
+    outExtensions: () => ({ js: '.js' }),
+    checks: {
+      legacyCjs: false // Suppress CJS build error in CI (remove when ESM only)
+    }
   }
 ])
