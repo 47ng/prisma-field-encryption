@@ -23,7 +23,7 @@ npm install prisma-field-encryption
 
 ## Prisma version compatibility
 
-This extension requires Prisma 4.7.0 or higher.
+This extension requires Prisma 4.7.0 up to 6.13.0.
 
 For Prisma versions 4.7.0 to 4.15.0, you will need to activate the
 `clientExtensions` preview feature, or use the [middleware interface](#middleware-interface).
@@ -34,7 +34,7 @@ and don't require a preview feature flag.
 > **Note**: The previous middleware interface is still available for Prisma
 > versions 3.8.0 to 4.6.x, but will be removed in a future update.
 > It is recommended to update your Prisma client and use the extension mechanism,
-> as support for middlewares will be removed from Prisma in the future.
+> as support for middlewares was removed from Prisma in 6.14.0.
 
 ## Usage
 
