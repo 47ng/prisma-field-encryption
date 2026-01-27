@@ -9,6 +9,7 @@ const config: Configuration = {
   encryptionKey: TEST_ENCRYPTION_KEY,
   dmmf: Prisma.dmmf
 }
+
 export function makeMiddlewareClient() {
   const client = new PrismaClient()
   client.$use(fieldEncryptionMiddleware(config))

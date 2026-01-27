@@ -2,7 +2,7 @@ import { migrate } from './migrations'
 import { makeExtensionClient } from './prismaClient'
 
 async function main() {
-  const client = await makeExtensionClient()
+  const client = makeExtensionClient()
   await Promise.all([
     client.user.create({
       data: {
