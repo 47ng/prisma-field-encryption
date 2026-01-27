@@ -3,16 +3,15 @@
 ## Getting Started
 
 1. Fork the repository & clone your fork
-2. Install dependencies with `yarn install` _(uses Yarn v1)_
-3. Build the sources with `yarn build`
+2. Install dependencies with `pnpm install`
+3. Build the sources with `pnpm build`
 
 ## Running tests
 
-1. Run `yarn test` to run all tests. This includes:
+1. Run `pnpm test` to run all tests. This includes:
 
-- Unit tests (`yarn test:unit`)
-- Typechecking (`yarn test:types`)
-- Integration tests (`yarn test:integration`)
+- Typechecking (`pnpm test:types`)
+- Runtime tests (`pnpm test:runtime`) - runs both unit and integration tests
 
 The [integration test suite](./src/tests/integration.test.ts) runs against a local SQLite database.
 It is copied from `./prisma/db.test.sqlite` to `./prisma/db.integration.sqlite` before each test runs.

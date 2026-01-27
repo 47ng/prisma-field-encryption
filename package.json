@@ -37,8 +37,7 @@
     "generate:prisma": "prisma generate",
     "test": "pnpm run --stream '/^test:/'",
     "test:types": "tsc --noEmit",
-    "test:unit": "vitest run --project unit",
-    "test:integration": "vitest run --project integration",
+    "test:runtime": "vitest run",
     "ci": "pnpm run build && pnpm run test",
     "prepare": "husky",
     "migrate": "node ./src/tests/migrate.ts"
