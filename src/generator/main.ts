@@ -7,8 +7,6 @@ import { generateIndex } from './generateIndex'
 import { generateModel } from './generateModel'
 import { getPrismaClientModule } from './prismaModule'
 
-const packageJson = require('../../package.json') as { version: string }
-
 export interface Config {
   concurrently?: boolean
 }
@@ -17,7 +15,7 @@ generatorHandler({
   onManifest() {
     return {
       prettyName: 'field-level encryption migrations',
-      version: packageJson.version,
+      version: require('../../package.json').version,
       requiresGenerators: ['prisma-client-js'],
       defaultOutput: 'migrations'
     }

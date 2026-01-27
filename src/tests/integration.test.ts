@@ -4,14 +4,16 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { beforeAll, describe, expect, test, vi } from 'vitest'
 import { errors } from '../errors'
-import { makeExtensionClient } from './prismaClient'
+import { makeExtensionClient, makeMiddlewareClient } from './prismaClient'
 import * as sqlite from './sqlite'
 
-const clients = [{ type: 'extension', client: makeExtensionClient() }]
+const clients = [
+  { type: 'middleware', client: makeMiddlewareClient() },
+  { type: 'extension', client: makeExtensionClient() }
+]
 
 describe.each(clients)('integration ($type)', ({ client }) => {
-
-  beforeAll(async () => {
+  beforeAll(() => {
     // Reset database
     const src = path.resolve(process.cwd(), 'prisma', 'db.test.sqlite')
     const dst = path.resolve(process.cwd(), 'prisma', 'db.integration.sqlite')

@@ -46,7 +46,7 @@
   "dependencies": {
     "@47ng/cloak": "^1.2.0",
     "@47ng/codec": "^1.1.0",
-    "@prisma/generator-helper": "^6.9.0",
+    "@prisma/generator-helper": "6.13.0",
     "debug": "^4.4.0",
     "immer": "^10.1.1",
     "object-path": "^0.11.8",
@@ -57,8 +57,8 @@
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^19.8.1",
-    "@prisma/client": "^6.9.0",
-    "@prisma/internals": "^6.9.0",
+    "@prisma/client": "6.13.0",
+    "@prisma/internals": "6.13.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/debug": "^4.1.12",
     "@types/node": "^22.15.33",
@@ -67,7 +67,7 @@
     "better-sqlite3": "^12.6.2",
     "commitlint": "^19.8.1",
     "husky": "^9.1.7",
-    "prisma": "^6.9.0",
+    "prisma": "6.13.0",
     "semantic-release": "^25.0.2",
     "tsdown": "^0.20.1",
     "typescript": "^5.9.3",
