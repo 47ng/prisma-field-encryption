@@ -146,6 +146,7 @@ export function decryptOnRead<Models extends string, Actions extends string>(
   const model = models[params.model!]
   if (
     Object.keys(model.fields).length === 0 &&
+    Object.keys(model.connections).length === 0 &&
     !params.args?.include &&
     !params.args?.select
   ) {
