@@ -2,6 +2,7 @@
 
 import { generatorHandler } from '@prisma/generator-helper'
 import fs from 'node:fs/promises'
+import { analyseSchema } from '../ast'
 import { analyseDMMF } from '../dmmf'
 import { generateIndex } from './generateIndex'
 import { generateModel } from './generateModel'
@@ -21,7 +22,14 @@ generatorHandler({
     }
   },
   async onGenerate(options) {
-    const models = analyseDMMF(options.dmmf)
+    // Try AST-based parsing first (using schema datamodel string),
+    // fall back to DMMF for older Prisma versions
+    let models
+    try {
+      models = analyseSchema(options.datamodel)
+    } catch {
+      models = analyseDMMF(options.dmmf)
+    }
     const outputDir = options.generator.output?.value!
     const concurrently = options.generator.config?.concurrently === 'true'
     const prismaClient = options.otherGenerators.find(

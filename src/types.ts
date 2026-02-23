@@ -70,6 +70,19 @@ export interface Configuration {
   encryptionKey?: string
   decryptionKeys?: string[]
   dmmf?: Readonly<DMMFDocument>
+  /**
+   * Path to the Prisma schema file.
+   * When provided, the schema file is parsed directly using AST,
+   * bypassing Prisma's internal DMMF format.
+   * This is required for Prisma >= 6.16.0 where DMMF no longer
+   * exposes field-level documentation.
+   */
+  schemaPath?: string
+  /**
+   * Raw Prisma schema source string.
+   * Alternative to schemaPath: pass the schema content directly.
+   */
+  schemaSource?: string
 }
 
 export type HashFieldConfiguration = {
